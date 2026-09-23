@@ -52,7 +52,12 @@ export function DayColumn({
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      id={`day-${day.id}`}
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext items={day.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
         <ul className="flex flex-col gap-2">
           {day.items.map((item, index) => (
