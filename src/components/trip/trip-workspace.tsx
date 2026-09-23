@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { toast } from "sonner";
-import { MapPin, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AddressSpotDialog, type AddressSpotSelection } from "./address-spot-dialog";
+import { CustomSpotDialog, type AddressSpotSelection } from "./custom-spot-dialog";
 import { DayColumn } from "./day-column";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
 import { TripMap, type MapPin as MapPinType } from "./trip-map";
@@ -248,16 +248,24 @@ export function TripWorkspace({
         {!readOnly && selectedDay && (
           <div className="flex flex-col gap-2">
             <SpotSearch onSelect={handlePlaceSelect} />
-            <Button
-              type="button"
-              variant={clickToAdd ? "default" : "outline"}
-              size="sm"
-              onClick={() => setClickToAdd((v) => !v)}
-            >
-              <MapPin className="h-4 w-4" />
-              {clickToAdd ? "地図をクリックして追加中..." : "地図をクリックして独自スポットを追加"}
-            </Button>
-            <AddressSpotDialog onSelect={handleAddressSelect} />
+            <CustomSpotDialog
+              onChooseMapClick={() => setClickToAdd(true)}
+              onAddressSelect={handleAddressSelect}
+            />
+            {clickToAdd && (
+              <div className="flex items-center justify-between gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+                <span>地図をクリックしてスポットを追加してください</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-blue-700 hover:text-blue-800 dark:text-blue-300"
+                  onClick={() => setClickToAdd(false)}
+                >
+                  キャンセル
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
