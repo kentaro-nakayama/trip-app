@@ -12,6 +12,42 @@ export type MapPin = {
   name: string;
 };
 
+// One arrow icon per leg, fixed at its midpoint and pointing from the
+// earlier stop to the later one, so the visit order reads at a glance
+// without needing a moving/animated line.
+function RouteArrows({ pins }: { pins: MapPin[] }) {
+  return (
+    <>
+      {pins.slice(0, -1).map((pin, i) => {
+        const next = pins[i + 1];
+        return (
+          <Polyline
+            key={pin.id}
+            path={[
+              { lat: pin.lat, lng: pin.lng },
+              { lat: next.lat, lng: next.lng },
+            ]}
+            strokeOpacity={0}
+            icons={[
+              {
+                icon: {
+                  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  scale: 3.5,
+                  strokeColor: "#ffffff",
+                  strokeWeight: 1,
+                  fillColor: "#2563eb",
+                  fillOpacity: 1,
+                },
+                offset: "50%",
+              },
+            ]}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 function FitBoundsToPins({ pins }: { pins: MapPin[] }) {
   const map = useMap();
 
@@ -83,12 +119,15 @@ export function TripMap({
       }}
     >
       {pins.length > 1 && (
-        <Polyline
-          path={pins.map((pin) => ({ lat: pin.lat, lng: pin.lng }))}
-          strokeColor="#2563eb"
-          strokeOpacity={0.8}
-          strokeWeight={3}
-        />
+        <>
+          <Polyline
+            path={pins.map((pin) => ({ lat: pin.lat, lng: pin.lng }))}
+            strokeColor="#2563eb"
+            strokeOpacity={0.8}
+            strokeWeight={3}
+          />
+          <RouteArrows pins={pins} />
+        </>
       )}
       {pins.map((pin) => (
         <AdvancedMarker key={pin.id} position={{ lat: pin.lat, lng: pin.lng }} title={pin.name}>
