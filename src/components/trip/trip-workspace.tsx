@@ -26,6 +26,29 @@ import { TripMap, type MapPin as MapPinType } from "./trip-map";
 import { InviteDialog } from "./invite-dialog";
 import type { TripDetail } from "@/lib/types";
 
+function reorderDayItems(
+  trip: TripDetail,
+  dayId: string,
+  orderedItemIds: string[],
+): TripDetail {
+  return {
+    ...trip,
+    days: trip.days.map((day) => {
+      if (day.id !== dayId) return day;
+      const itemsById = new Map(day.items.map((item) => [item.id, item]));
+      return {
+        ...day,
+        items: orderedItemIds
+          .map((id, index) => {
+            const item = itemsById.get(id);
+            return item ? { ...item, order: index } : null;
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null),
+      };
+    }),
+  };
+}
+
 async function fetchTrip(tripId: string): Promise<TripDetail> {
   const res = await fetch(`/api/trips/${tripId}`);
   if (!res.ok) throw new Error("旅行の取得に失敗しました");
@@ -158,8 +181,21 @@ export function TripWorkspace({
       });
       if (!res.ok) throw new Error("failed");
     },
-    onSuccess: () => invalidate(),
-    onError: () => toast.error("並び替えに失敗しました"),
+    onMutate: async ({ dayId, orderedItemIds }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<TripDetail>(queryKey);
+      if (previous) {
+        queryClient.setQueryData<TripDetail>(
+          queryKey,
+          reorderDayItems(previous, dayId, orderedItemIds),
+        );
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      toast.error("並び替えに失敗しました");
+    },
   });
 
   const removeItem = useMutation({
