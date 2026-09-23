@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, StickyNote, X } from "lucide-react";
+import { ArrowUpDown, StickyNote, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -82,7 +82,7 @@ export function SortableItineraryItem({
               {...attributes}
               {...listeners}
             >
-              <GripVertical className="h-4 w-4" />
+              <ArrowUpDown className="h-4 w-4" />
             </Button>
             <Button
               type="button"
