@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { toast } from "sonner";
-import { List, Map as MapIcon, Plus } from "lucide-react";
+import { ArrowLeft, List, Map as MapIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -216,13 +217,24 @@ export function TripWorkspace({
   const content = (
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <div className="flex items-start justify-between gap-2 border-b p-4 md:hidden">
-        <div>
-          <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
-          {(data.startDate || data.endDate) && (
-            <p className="text-xs text-zinc-500">
-              {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
-            </p>
-          )}
+        <div className="flex items-start gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="-ml-1 h-8 w-8 shrink-0"
+            nativeButton={false}
+            render={<Link href="/trips" />}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+            {(data.startDate || data.endDate) && (
+              <p className="text-xs text-zinc-500">
+                {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
+              </p>
+            )}
+          </div>
         </div>
         {!readOnly && <InviteDialog tripId={tripId} />}
       </div>
@@ -256,13 +268,24 @@ export function TripWorkspace({
           )}
         >
           <div className="hidden items-start justify-between gap-2 md:flex">
-            <div>
-              <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
-              {(data.startDate || data.endDate) && (
-                <p className="text-xs text-zinc-500">
-                  {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
-                </p>
-              )}
+            <div className="flex items-start gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="-ml-1 h-8 w-8 shrink-0"
+                nativeButton={false}
+                render={<Link href="/trips" />}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+                {(data.startDate || data.endDate) && (
+                  <p className="text-xs text-zinc-500">
+                    {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
+                  </p>
+                )}
+              </div>
             </div>
             {!readOnly && <InviteDialog tripId={tripId} />}
           </div>
