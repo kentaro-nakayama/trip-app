@@ -44,32 +44,23 @@ export async function PATCH(
   if (!day) return NextResponse.json({ error: "day_not_found" }, { status: 404 });
 
   // Two-phase update avoids clashing with the (itineraryDayId, order) unique
-  // index while orders are being shuffled.
-  await db.transaction(async (tx) => {
-    const { orderedItemIds } = parsed.data;
-    for (let i = 0; i < orderedItemIds.length; i++) {
-      await tx
-        .update(itineraryItems)
-        .set({ order: -(i + 1) })
-        .where(
-          and(
-            eq(itineraryItems.id, orderedItemIds[i]),
-            eq(itineraryItems.itineraryDayId, day.id),
-          ),
-        );
-    }
-    for (let i = 0; i < orderedItemIds.length; i++) {
-      await tx
-        .update(itineraryItems)
-        .set({ order: i })
-        .where(
-          and(
-            eq(itineraryItems.id, orderedItemIds[i]),
-            eq(itineraryItems.itineraryDayId, day.id),
-          ),
-        );
-    }
-  });
+  // index while orders are being shuffled. Uses db.batch() rather than
+  // db.transaction(): the neon-http driver has no interactive-transaction
+  // support (HTTP, not a persistent session), only single-round-trip batches.
+  const { orderedItemIds } = parsed.data;
+
+  const updateOrder = (id: string, order: number) =>
+    db
+      .update(itineraryItems)
+      .set({ order })
+      .where(and(eq(itineraryItems.id, id), eq(itineraryItems.itineraryDayId, day.id)));
+
+  const queries = [
+    ...orderedItemIds.map((id, i) => updateOrder(id, -(i + 1))),
+    ...orderedItemIds.map((id, i) => updateOrder(id, i)),
+  ] as [ReturnType<typeof updateOrder>, ...ReturnType<typeof updateOrder>[]];
+
+  await db.batch(queries);
 
   return NextResponse.json({ ok: true });
 }
