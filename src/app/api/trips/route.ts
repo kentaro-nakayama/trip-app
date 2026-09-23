@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { trips, tripMembers } from "@/db/schema";
+import { MAX_TRIP_SPAN_DAYS, dateRange, syncItineraryDaysToDateRange } from "@/lib/itinerary-days";
 import type { TripSummary } from "@/lib/types";
 
 export async function GET() {
@@ -36,12 +37,24 @@ export async function GET() {
   return NextResponse.json(result);
 }
 
-const createTripSchema = z.object({
-  name: z.string().trim().min(1).max(200),
-  description: z.string().trim().max(2000).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-});
+const createTripSchema = z
+  .object({
+    name: z.string().trim().min(1).max(200),
+    description: z.string().trim().max(2000).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+  })
+  .refine(
+    (data) => !data.startDate || !data.endDate || data.endDate >= data.startDate,
+    { message: "終了日は開始日以降にしてください", path: ["endDate"] },
+  )
+  .refine(
+    (data) =>
+      !data.startDate ||
+      !data.endDate ||
+      dateRange(data.startDate, data.endDate).length <= MAX_TRIP_SPAN_DAYS,
+    { message: `旅行期間は${MAX_TRIP_SPAN_DAYS}日以内にしてください`, path: ["endDate"] },
+  );
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -69,6 +82,8 @@ export async function POST(req: Request) {
     userId,
     role: "owner",
   });
+
+  await syncItineraryDaysToDateRange(trip.id, trip.startDate, trip.endDate);
 
   return NextResponse.json(trip, { status: 201 });
 }

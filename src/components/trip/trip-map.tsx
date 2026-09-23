@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { AdvancedMarker, Map, Polyline, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import type { PlaceSelection } from "./spot-search";
 
@@ -74,10 +74,15 @@ export function TripMap({
   onPoiClick,
 }: {
   pins: MapPin[];
-  onMapClick?: (lat: number, lng: number) => void;
+  onMapClick?: (lat: number, lng: number, address: string | null) => void;
   onPoiClick?: (place: PlaceSelection) => void;
 }) {
   const placesLib = useMapsLibrary("places");
+  const geocodingLib = useMapsLibrary("geocoding");
+  const geocoder = useMemo(
+    () => (geocodingLib ? new geocodingLib.Geocoder() : null),
+    [geocodingLib],
+  );
 
   const handlePoiClick = useCallback(
     async (placeId: string) => {
@@ -96,6 +101,23 @@ export function TripMap({
     [placesLib, onPoiClick],
   );
 
+  const handleMapClick = useCallback(
+    async (lat: number, lng: number) => {
+      if (!onMapClick) return;
+      let address: string | null = null;
+      if (geocoder) {
+        try {
+          const { results } = await geocoder.geocode({ location: { lat, lng } });
+          address = results[0]?.formatted_address ?? null;
+        } catch {
+          address = null;
+        }
+      }
+      onMapClick(lat, lng, address);
+    },
+    [onMapClick, geocoder],
+  );
+
   return (
     <Map
       className="h-full w-full"
@@ -109,7 +131,7 @@ export function TripMap({
         if (onMapClick) {
           if (!ev.detail.latLng) return;
           ev.stop();
-          onMapClick(ev.detail.latLng.lat, ev.detail.latLng.lng);
+          handleMapClick(ev.detail.latLng.lat, ev.detail.latLng.lng);
           return;
         }
         if (ev.detail.placeId) {

@@ -32,6 +32,17 @@ async function fetchTrip(tripId: string): Promise<TripDetail> {
   return res.json();
 }
 
+const dayLabelFormatter = new Intl.DateTimeFormat("ja-JP", {
+  month: "numeric",
+  day: "numeric",
+  weekday: "short",
+});
+
+function formatDayLabel(day: { date: string | null }, index: number): string {
+  if (!day.date) return `${index + 1}日目`;
+  return dayLabelFormatter.format(new Date(`${day.date}T00:00:00`));
+}
+
 export function TripWorkspace({
   tripId,
   initial,
@@ -55,7 +66,11 @@ export function TripWorkspace({
   );
   const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const [clickToAdd, setClickToAdd] = useState(false);
-  const [pendingLatLng, setPendingLatLng] = useState<{ lat: number; lng: number } | null>(null);
+  const [pendingLatLng, setPendingLatLng] = useState<{
+    lat: number;
+    lng: number;
+    address: string | null;
+  } | null>(null);
   const [pendingName, setPendingName] = useState("");
   const [pendingCustomNotes, setPendingCustomNotes] = useState("");
   const [pendingPlace, setPendingPlace] = useState<PlaceSelection | null>(null);
@@ -182,6 +197,7 @@ export function TripWorkspace({
     if (!pendingLatLng || !selectedDay || !pendingName.trim()) return;
     const spot = await createSpot.mutateAsync({
       name: pendingName.trim(),
+      address: pendingLatLng.address ?? undefined,
       lat: pendingLatLng.lat,
       lng: pendingLatLng.lng,
       notes: pendingCustomNotes.trim() || undefined,
@@ -298,10 +314,10 @@ export function TripWorkspace({
                 variant={day.id === selectedDay?.id ? "default" : "outline"}
                 onClick={() => setSelectedDayId(day.id)}
               >
-                {index + 1}日目
+                {formatDayLabel(day, index)}
               </Button>
             ))}
-            {!readOnly && (
+            {!readOnly && !(data.startDate && data.endDate) && (
               <Button size="sm" variant="ghost" onClick={() => createDay.mutate()}>
                 <Plus className="h-4 w-4" />
                 日程を追加
@@ -355,7 +371,9 @@ export function TripWorkspace({
           <TripMap
             pins={pins}
             onMapClick={
-              clickToAdd ? (lat, lng) => setPendingLatLng({ lat, lng }) : undefined
+              clickToAdd
+                ? (lat, lng, address) => setPendingLatLng({ lat, lng, address })
+                : undefined
             }
             onPoiClick={!readOnly && selectedDay ? handlePlaceSelect : undefined}
           />
@@ -374,6 +392,9 @@ export function TripWorkspace({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>独自スポットを追加</DialogTitle>
+            {pendingLatLng?.address && (
+              <DialogDescription>{pendingLatLng.address}</DialogDescription>
+            )}
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid gap-2">
