@@ -1,0 +1,71 @@
+"use client";
+
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { SortableItineraryItem } from "./sortable-itinerary-item";
+import type { ItineraryDay } from "@/lib/types";
+
+export function DayColumn({
+  day,
+  readOnly,
+  onReorder,
+  onRemoveItem,
+}: {
+  day: ItineraryDay;
+  readOnly: boolean;
+  onReorder: (orderedItemIds: string[]) => void;
+  onRemoveItem: (itemId: string) => void;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = day.items.findIndex((i) => i.id === active.id);
+    const newIndex = day.items.findIndex((i) => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(day.items, oldIndex, newIndex);
+    onReorder(reordered.map((i) => i.id));
+  }
+
+  if (day.items.length === 0) {
+    return (
+      <p className="rounded-md border border-dashed p-4 text-center text-sm text-zinc-500">
+        まだスポットがありません。地図や検索から追加してください。
+      </p>
+    );
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={day.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+        <ul className="flex flex-col gap-2">
+          {day.items.map((item, index) => (
+            <SortableItineraryItem
+              key={item.id}
+              item={item}
+              order={index}
+              readOnly={readOnly}
+              onRemove={() => onRemoveItem(item.id)}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+    </DndContext>
+  );
+}
