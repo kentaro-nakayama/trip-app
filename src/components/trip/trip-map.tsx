@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { AdvancedMarker, Map, useMap } from "@vis.gl/react-google-maps";
+import { useCallback, useEffect } from "react";
+import { AdvancedMarker, Map, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
+import type { PlaceSelection } from "./spot-search";
 
 export type MapPin = {
   id: string;
@@ -34,10 +35,31 @@ function FitBoundsToPins({ pins }: { pins: MapPin[] }) {
 export function TripMap({
   pins,
   onMapClick,
+  onPoiClick,
 }: {
   pins: MapPin[];
   onMapClick?: (lat: number, lng: number) => void;
+  onPoiClick?: (place: PlaceSelection) => void;
 }) {
+  const placesLib = useMapsLibrary("places");
+
+  const handlePoiClick = useCallback(
+    async (placeId: string) => {
+      if (!placesLib || !onPoiClick) return;
+      const place = new placesLib.Place({ id: placeId });
+      await place.fetchFields({ fields: ["displayName", "formattedAddress", "location"] });
+      if (!place.location) return;
+      onPoiClick({
+        name: place.displayName ?? "",
+        address: place.formattedAddress ?? null,
+        lat: place.location.lat(),
+        lng: place.location.lng(),
+        googlePlaceId: placeId,
+      });
+    },
+    [placesLib, onPoiClick],
+  );
+
   return (
     <Map
       className="h-full w-full"
@@ -47,8 +69,17 @@ export function TripMap({
       gestureHandling="greedy"
       disableDefaultUI={false}
       onClick={(ev) => {
-        if (!onMapClick || !ev.detail.latLng) return;
-        onMapClick(ev.detail.latLng.lat, ev.detail.latLng.lng);
+        // Click-to-add-custom-spot mode takes priority over Google POI details.
+        if (onMapClick) {
+          if (!ev.detail.latLng) return;
+          ev.stop();
+          onMapClick(ev.detail.latLng.lat, ev.detail.latLng.lng);
+          return;
+        }
+        if (ev.detail.placeId) {
+          ev.stop();
+          handlePoiClick(ev.detail.placeId);
+        }
       }}
     >
       {pins.map((pin) => (

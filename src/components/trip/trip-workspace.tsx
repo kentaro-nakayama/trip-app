@@ -290,6 +290,7 @@ export function TripWorkspace({
           onMapClick={
             clickToAdd ? (lat, lng) => setPendingLatLng({ lat, lng }) : undefined
           }
+          onPoiClick={!readOnly && selectedDay ? handlePlaceSelect : undefined}
         />
       </main>
 
