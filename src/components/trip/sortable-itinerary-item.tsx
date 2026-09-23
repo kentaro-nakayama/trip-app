@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ArrowUpDown, StickyNote, X } from "lucide-react";
+import { ArrowUpDown, Copy, StickyNote, X } from "lucide-react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,20 +57,38 @@ export function SortableItineraryItem({
     setIsEditingNotes(false);
   }
 
+  async function copyAddress() {
+    if (!item.spot.address) return;
+    try {
+      await navigator.clipboard.writeText(item.spot.address);
+      toast.success("住所をコピーしました");
+    } catch {
+      toast.error("コピーに失敗しました");
+    }
+  }
+
   return (
     <li
       ref={setNodeRef}
       style={style}
       className="flex flex-col gap-2 rounded-md border bg-white p-2 dark:bg-zinc-900"
     >
-      <div className="flex items-center gap-2">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
           {order + 1}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{item.spot.name}</p>
           {item.spot.address && (
-            <p className="truncate text-xs text-zinc-500">{item.spot.address}</p>
+            <button
+              type="button"
+              onClick={copyAddress}
+              title="タップして住所をコピー"
+              className="block w-full text-left text-[11px] leading-snug break-words text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            >
+              {item.spot.address}
+              <Copy className="ml-1 inline h-2.5 w-2.5 align-text-bottom" />
+            </button>
           )}
         </div>
         {!readOnly && (
@@ -79,7 +98,7 @@ export function SortableItineraryItem({
               variant="ghost"
               size="icon"
               className={cn(
-                "h-7 w-7 shrink-0",
+                "mt-0.5 h-7 w-7 shrink-0",
                 item.spot.notes && "text-blue-600 dark:text-blue-400",
               )}
               onClick={() => (isEditingNotes ? setIsEditingNotes(false) : startEditing())}
@@ -90,7 +109,7 @@ export function SortableItineraryItem({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 cursor-grab touch-none"
+              className="mt-0.5 h-7 w-7 shrink-0 cursor-grab touch-none"
               {...attributes}
               {...listeners}
             >
@@ -98,7 +117,14 @@ export function SortableItineraryItem({
             </Button>
             <AlertDialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
               <AlertDialogTrigger
-                render={<Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0" />}
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="mt-0.5 h-7 w-7 shrink-0"
+                  />
+                }
               >
                 <X className="h-4 w-4" />
               </AlertDialogTrigger>

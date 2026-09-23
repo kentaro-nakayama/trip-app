@@ -33,7 +33,10 @@ export function SpotSearch({
       if (!place.location) return;
 
       onSelect({
-        name: place.displayName ?? suggestion.placePrediction.text.text,
+        name:
+          place.displayName ??
+          suggestion.placePrediction.mainText?.text ??
+          suggestion.placePrediction.text.text,
         address: place.formattedAddress ?? null,
         lat: place.location.lat(),
         lng: place.location.lng(),
@@ -62,17 +65,25 @@ export function SpotSearch({
           {isLoading && suggestions.length === 0 && (
             <li className="px-3 py-2 text-sm text-zinc-500">検索中...</li>
           )}
-          {suggestions.map((suggestion, index) => (
-            <li key={index}>
-              <button
-                type="button"
-                className="w-full truncate px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                onClick={() => handleSelect(suggestion)}
-              >
-                {suggestion.placePrediction?.text.text}
-              </button>
-            </li>
-          ))}
+          {suggestions.map((suggestion, index) => {
+            const prediction = suggestion.placePrediction;
+            const mainText = prediction?.mainText?.text ?? prediction?.text.text;
+            const secondaryText = prediction?.secondaryText?.text;
+            return (
+              <li key={index}>
+                <button
+                  type="button"
+                  className="w-full truncate px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  onClick={() => handleSelect(suggestion)}
+                >
+                  <span className="font-medium">{mainText}</span>
+                  {secondaryText && (
+                    <span className="text-zinc-500"> {secondaryText}</span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
