@@ -18,10 +18,17 @@ export function dateRange(start: string, end: string): string[] {
 }
 
 /**
- * Keeps a trip's itinerary_days in sync with its date range: creates a day
- * for every date in [startDate, endDate] that doesn't already have one, and
- * removes existing dated days that fall outside the range — but only when
- * they're empty, so a day with spots in it is never silently deleted.
+ * Keeps a trip's itinerary_days in sync with its date range.
+ *
+ * Existing days created before a date range existed (or from a since-shrunk
+ * range) have `date: null`. Rather than leaving them alongside a whole new
+ * set of dated days — which would duplicate every "day" as an empty new tab
+ * next to the real one still holding its spots — this "adopts" dateless
+ * days into the range in their existing order, assigning each the earliest
+ * date not already claimed by a dated day. Only genuinely uncovered dates
+ * get newly created days, and only empty *dated* days outside the range are
+ * removed, so a day with spots in it is never silently deleted.
+ *
  * A no-op when either date is missing.
  */
 export async function syncItineraryDaysToDateRange(
@@ -32,21 +39,44 @@ export async function syncItineraryDaysToDateRange(
   if (!startDate || !endDate) return;
 
   const db = getDb();
-  const desiredDates = new Set(dateRange(startDate, endDate));
+  const desiredDates = [...new Set(dateRange(startDate, endDate))].sort();
+  const desiredDatesSet = new Set(desiredDates);
 
   const existingDays = await db
     .select({ id: itineraryDays.id, date: itineraryDays.date, dayIndex: itineraryDays.dayIndex })
     .from(itineraryDays)
-    .where(eq(itineraryDays.tripId, tripId));
+    .where(eq(itineraryDays.tripId, tripId))
+    .orderBy(itineraryDays.dayIndex);
 
   const existingDatedDates = new Set(
     existingDays.filter((d) => d.date).map((d) => d.date as string),
   );
 
-  const datesToAdd = [...desiredDates].filter((d) => !existingDatedDates.has(d));
+  // Adopt dateless legacy days into the earliest unclaimed dates, in their
+  // existing order, so day 1's spots land on the range's first date.
+  const unclaimedDates = desiredDates.filter((d) => !existingDatedDates.has(d));
+  const dateAssignments = new Map<string, string>(); // dayId -> date
+  for (const day of existingDays) {
+    if (day.date || unclaimedDates.length === 0) continue;
+    dateAssignments.set(day.id, unclaimedDates.shift()!);
+  }
+  if (dateAssignments.size > 0) {
+    const assignDate = (dayId: string, date: string) =>
+      db.update(itineraryDays).set({ date }).where(eq(itineraryDays.id, dayId));
+    const assignments = [...dateAssignments.entries()];
+    await db.batch(
+      assignments.map(([dayId, date]) => assignDate(dayId, date)) as [
+        ReturnType<typeof assignDate>,
+        ...ReturnType<typeof assignDate>[],
+      ],
+    );
+    for (const [, date] of assignments) existingDatedDates.add(date);
+  }
+
+  const datesToAdd = unclaimedDates;
 
   const staleDayIds = existingDays
-    .filter((d) => d.date && !desiredDates.has(d.date))
+    .filter((d) => d.date && !desiredDatesSet.has(d.date) && !dateAssignments.has(d.id))
     .map((d) => d.id);
 
   if (staleDayIds.length > 0) {
