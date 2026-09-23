@@ -15,7 +15,7 @@ export default async function Home() {
           スポットを検索して保存し、行程を並べ替え、地図で確認しながらみんなで旅行の計画を立てられます。
         </p>
       </div>
-      <div className="flex gap-4">
+      <div className="flex w-full max-w-xs flex-col gap-4 sm:w-auto sm:flex-row">
         <Button size="lg" nativeButton={false} render={<Link href="/sign-up" />}>
           はじめる
         </Button>

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { List, Map as MapIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { CustomSpotDialog, type AddressSpotSelection } from "./custom-spot-dialog";
 import { DayColumn } from "./day-column";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
@@ -51,6 +52,7 @@ export function TripWorkspace({
   const [selectedDayId, setSelectedDayId] = useState<string | null>(
     initial.days[0]?.id ?? null,
   );
+  const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const [clickToAdd, setClickToAdd] = useState(false);
   const [pendingLatLng, setPendingLatLng] = useState<{ lat: number; lng: number } | null>(null);
   const [pendingName, setPendingName] = useState("");
@@ -212,87 +214,130 @@ export function TripWorkspace({
   );
 
   const content = (
-    <div className="flex min-h-0 flex-1">
-      <aside className="flex w-[380px] shrink-0 flex-col gap-4 overflow-y-auto border-r p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
-            {(data.startDate || data.endDate) && (
-              <p className="text-xs text-zinc-500">
-                {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
-              </p>
-            )}
-          </div>
-          {!readOnly && <InviteDialog tripId={tripId} />}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {data.days.map((day, index) => (
-            <Button
-              key={day.id}
-              size="sm"
-              variant={day.id === selectedDay?.id ? "default" : "outline"}
-              onClick={() => setSelectedDayId(day.id)}
-            >
-              {index + 1}日目
-            </Button>
-          ))}
-          {!readOnly && (
-            <Button size="sm" variant="ghost" onClick={() => createDay.mutate()}>
-              <Plus className="h-4 w-4" />
-              日程を追加
-            </Button>
+    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="flex items-start justify-between gap-2 border-b p-4 md:hidden">
+        <div>
+          <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+          {(data.startDate || data.endDate) && (
+            <p className="text-xs text-zinc-500">
+              {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
+            </p>
           )}
         </div>
+        {!readOnly && <InviteDialog tripId={tripId} />}
+      </div>
 
-        {!readOnly && selectedDay && (
-          <div className="flex flex-col gap-2">
-            <SpotSearch onSelect={handlePlaceSelect} />
-            <CustomSpotDialog
-              onChooseMapClick={() => setClickToAdd(true)}
-              onAddressSelect={handleAddressSelect}
-            />
-            {clickToAdd && (
-              <div className="flex items-center justify-between gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
-                <span>地図をクリックしてスポットを追加してください</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-blue-700 hover:text-blue-800 dark:text-blue-300"
-                  onClick={() => setClickToAdd(false)}
-                >
-                  キャンセル
-                </Button>
-              </div>
+      <div className="grid shrink-0 grid-cols-2 gap-1 border-b p-2 md:hidden">
+        <Button
+          type="button"
+          variant={mobileView === "list" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setMobileView("list")}
+        >
+          <List className="h-4 w-4" />
+          行程
+        </Button>
+        <Button
+          type="button"
+          variant={mobileView === "map" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setMobileView("map")}
+        >
+          <MapIcon className="h-4 w-4" />
+          地図
+        </Button>
+      </div>
+
+      <div className="relative flex min-h-0 flex-1 md:flex-row">
+        <aside
+          className={cn(
+            "absolute inset-0 z-10 min-h-0 flex-col gap-4 overflow-y-auto bg-background p-4 md:static md:z-auto md:flex md:w-[380px] md:flex-none md:shrink-0 md:border-r",
+            mobileView === "list" ? "flex" : "hidden",
+          )}
+        >
+          <div className="hidden items-start justify-between gap-2 md:flex">
+            <div>
+              <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+              {(data.startDate || data.endDate) && (
+                <p className="text-xs text-zinc-500">
+                  {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
+                </p>
+              )}
+            </div>
+            {!readOnly && <InviteDialog tripId={tripId} />}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {data.days.map((day, index) => (
+              <Button
+                key={day.id}
+                size="sm"
+                variant={day.id === selectedDay?.id ? "default" : "outline"}
+                onClick={() => setSelectedDayId(day.id)}
+              >
+                {index + 1}日目
+              </Button>
+            ))}
+            {!readOnly && (
+              <Button size="sm" variant="ghost" onClick={() => createDay.mutate()}>
+                <Plus className="h-4 w-4" />
+                日程を追加
+              </Button>
             )}
           </div>
-        )}
 
-        {selectedDay ? (
-          <DayColumn
-            day={selectedDay}
-            readOnly={readOnly}
-            onReorder={(orderedItemIds) =>
-              reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
+          {!readOnly && selectedDay && (
+            <div className="flex flex-col gap-2">
+              <SpotSearch onSelect={handlePlaceSelect} />
+              <CustomSpotDialog
+                onChooseMapClick={() => {
+                  setClickToAdd(true);
+                  setMobileView("map");
+                }}
+                onAddressSelect={handleAddressSelect}
+              />
+              {clickToAdd && (
+                <div className="flex items-center justify-between gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+                  <span>地図をクリックしてスポットを追加してください</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-blue-700 hover:text-blue-800 dark:text-blue-300"
+                    onClick={() => setClickToAdd(false)}
+                  >
+                    キャンセル
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {selectedDay ? (
+            <DayColumn
+              day={selectedDay}
+              readOnly={readOnly}
+              onReorder={(orderedItemIds) =>
+                reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
+              }
+              onRemoveItem={(itemId) => removeItem.mutate(itemId)}
+              onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
+            />
+          ) : (
+            <p className="text-sm text-zinc-500">まだ日程がありません。</p>
+          )}
+        </aside>
+
+        <main className="relative min-h-0 flex-1">
+          <TripMap
+            pins={pins}
+            onMapClick={
+              clickToAdd ? (lat, lng) => setPendingLatLng({ lat, lng }) : undefined
             }
-            onRemoveItem={(itemId) => removeItem.mutate(itemId)}
-            onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
+            onPoiClick={!readOnly && selectedDay ? handlePlaceSelect : undefined}
           />
-        ) : (
-          <p className="text-sm text-zinc-500">まだ日程がありません。</p>
-        )}
-      </aside>
-
-      <main className="relative flex-1">
-        <TripMap
-          pins={pins}
-          onMapClick={
-            clickToAdd ? (lat, lng) => setPendingLatLng({ lat, lng }) : undefined
-          }
-          onPoiClick={!readOnly && selectedDay ? handlePlaceSelect : undefined}
-        />
-      </main>
+        </main>
+      </div>
 
       <Dialog
         open={pendingLatLng !== null}
