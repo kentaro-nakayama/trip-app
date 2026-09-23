@@ -4,6 +4,17 @@ import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ArrowUpDown, StickyNote, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -27,6 +38,7 @@ export function SortableItineraryItem({
 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(item.spot.notes ?? "");
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -84,15 +96,33 @@ export function SortableItineraryItem({
             >
               <ArrowUpDown className="h-4 w-4" />
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0"
-              onClick={onRemove}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <AlertDialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
+              <AlertDialogTrigger
+                render={<Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0" />}
+              >
+                <X className="h-4 w-4" />
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>「{item.spot.name}」を削除しますか？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    行程からこのスポットを削除します。この操作は取り消せません。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      onRemove();
+                      setConfirmRemoveOpen(false);
+                    }}
+                    className="bg-destructive text-white hover:bg-destructive/90"
+                  >
+                    削除する
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>

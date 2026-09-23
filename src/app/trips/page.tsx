@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { trips, tripMembers } from "@/db/schema";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CreateTripDialog } from "@/components/trips/create-trip-dialog";
+import { TripCard } from "@/components/trips/trip-card";
 
 export default async function TripsPage() {
   const { userId } = await auth();
@@ -19,6 +18,7 @@ export default async function TripsPage() {
       description: trips.description,
       startDate: trips.startDate,
       endDate: trips.endDate,
+      role: tripMembers.role,
     })
     .from(tripMembers)
     .innerJoin(trips, eq(tripMembers.tripId, trips.id))
@@ -41,23 +41,7 @@ export default async function TripsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {myTrips.map((trip) => (
-            <Link key={trip.id} href={`/trips/${trip.id}`}>
-              <Card className="h-full transition-colors hover:border-zinc-400">
-                <CardHeader>
-                  <CardTitle>{trip.name}</CardTitle>
-                  {(trip.startDate || trip.endDate) && (
-                    <CardDescription>
-                      {trip.startDate ?? "?"} 〜 {trip.endDate ?? "?"}
-                    </CardDescription>
-                  )}
-                  {trip.description && (
-                    <CardDescription className="line-clamp-2">
-                      {trip.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-              </Card>
-            </Link>
+            <TripCard key={trip.id} trip={trip} />
           ))}
         </div>
       )}

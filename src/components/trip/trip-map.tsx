@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import { AdvancedMarker, Map, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
+import { AdvancedMarker, Map, Polyline, useMap, useMapsLibrary } from "@vis.gl/react-google-maps";
 import type { PlaceSelection } from "./spot-search";
 
 export type MapPin = {
@@ -82,6 +82,14 @@ export function TripMap({
         }
       }}
     >
+      {pins.length > 1 && (
+        <Polyline
+          path={pins.map((pin) => ({ lat: pin.lat, lng: pin.lng }))}
+          strokeColor="#2563eb"
+          strokeOpacity={0.8}
+          strokeWeight={3}
+        />
+      )}
       {pins.map((pin) => (
         <AdvancedMarker key={pin.id} position={{ lat: pin.lat, lng: pin.lng }} title={pin.name}>
           <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-600 text-sm font-semibold text-white shadow">
