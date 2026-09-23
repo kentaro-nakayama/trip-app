@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export type AddressSpotSelection = {
   name: string;
   address: string;
   lat: number;
   lng: number;
+  notes?: string;
 };
 
 export function AddressSpotDialog({
@@ -39,11 +41,13 @@ export function AddressSpotDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function reset() {
     setName("");
     setAddress("");
+    setNotes("");
   }
 
   async function handleSubmit() {
@@ -63,6 +67,7 @@ export function AddressSpotDialog({
         address: result.formatted_address,
         lat: result.geometry.location.lat(),
         lng: result.geometry.location.lng(),
+        notes: notes.trim() || undefined,
       });
 
       reset();
@@ -117,6 +122,15 @@ export function AddressSpotDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="空欄の場合は住所から自動設定されます"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="address-spot-notes">メモ（任意）</Label>
+              <Textarea
+                id="address-spot-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="このスポットについてのメモ"
               />
             </div>
           </div>

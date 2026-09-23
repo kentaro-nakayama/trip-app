@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { AddressSpotDialog, type AddressSpotSelection } from "./address-spot-dialog";
 import { DayColumn } from "./day-column";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
@@ -52,6 +54,9 @@ export function TripWorkspace({
   const [clickToAdd, setClickToAdd] = useState(false);
   const [pendingLatLng, setPendingLatLng] = useState<{ lat: number; lng: number } | null>(null);
   const [pendingName, setPendingName] = useState("");
+  const [pendingCustomNotes, setPendingCustomNotes] = useState("");
+  const [pendingPlace, setPendingPlace] = useState<PlaceSelection | null>(null);
+  const [pendingPlaceNotes, setPendingPlaceNotes] = useState("");
 
   const readOnly = data.myRole === "viewer";
   const selectedDay = data.days.find((d) => d.id === selectedDayId) ?? data.days[0] ?? null;
@@ -94,6 +99,7 @@ export function TripWorkspace({
       lat: number;
       lng: number;
       googlePlaceId?: string;
+      notes?: string;
     }) => {
       const res = await fetch(`/api/trips/${tripId}/spots`, {
         method: "POST",
@@ -103,6 +109,20 @@ export function TripWorkspace({
       if (!res.ok) throw new Error("failed");
       return res.json();
     },
+  });
+
+  const updateSpotNotes = useMutation({
+    mutationFn: async ({ spotId, notes }: { spotId: string; notes: string }) => {
+      const res = await fetch(`/api/trips/${tripId}/spots/${spotId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: notes || null }),
+      });
+      if (!res.ok) throw new Error("failed");
+      return res.json();
+    },
+    onSuccess: () => invalidate(),
+    onError: () => toast.error("メモの保存に失敗しました"),
   });
 
   const reorder = useMutation({
@@ -135,13 +155,24 @@ export function TripWorkspace({
     onError: () => toast.error("削除に失敗しました"),
   });
 
-  async function handlePlaceSelect(place: PlaceSelection) {
+  function handlePlaceSelect(place: PlaceSelection) {
     if (!selectedDay) {
       toast.error("先に日程を追加してください");
       return;
     }
-    const spot = await createSpot.mutateAsync(place);
+    setPendingPlace(place);
+    setPendingPlaceNotes("");
+  }
+
+  async function handleConfirmPlace() {
+    if (!pendingPlace || !selectedDay) return;
+    const spot = await createSpot.mutateAsync({
+      ...pendingPlace,
+      notes: pendingPlaceNotes.trim() || undefined,
+    });
     await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
+    setPendingPlace(null);
+    setPendingPlaceNotes("");
   }
 
   async function handleConfirmCustomSpot() {
@@ -150,10 +181,12 @@ export function TripWorkspace({
       name: pendingName.trim(),
       lat: pendingLatLng.lat,
       lng: pendingLatLng.lng,
+      notes: pendingCustomNotes.trim() || undefined,
     });
     await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
     setPendingLatLng(null);
     setPendingName("");
+    setPendingCustomNotes("");
     setClickToAdd(false);
   }
 
@@ -236,6 +269,7 @@ export function TripWorkspace({
               reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
             }
             onRemoveItem={(itemId) => removeItem.mutate(itemId)}
+            onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
           />
         ) : (
           <p className="text-sm text-zinc-500">まだ日程がありません。</p>
@@ -264,15 +298,26 @@ export function TripWorkspace({
           <DialogHeader>
             <DialogTitle>独自スポットを追加</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2 py-2">
-            <Label htmlFor="custom-spot-name">スポット名</Label>
-            <Input
-              id="custom-spot-name"
-              value={pendingName}
-              onChange={(e) => setPendingName(e.target.value)}
-              placeholder="例: 隠れた展望スポット"
-              autoFocus
-            />
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label htmlFor="custom-spot-name">スポット名</Label>
+              <Input
+                id="custom-spot-name"
+                value={pendingName}
+                onChange={(e) => setPendingName(e.target.value)}
+                placeholder="例: 隠れた展望スポット"
+                autoFocus
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="custom-spot-notes">メモ（任意）</Label>
+              <Textarea
+                id="custom-spot-notes"
+                value={pendingCustomNotes}
+                onChange={(e) => setPendingCustomNotes(e.target.value)}
+                placeholder="このスポットについてのメモ"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -280,6 +325,40 @@ export function TripWorkspace({
               disabled={!pendingName.trim() || createSpot.isPending}
             >
               追加する
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={pendingPlace !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingPlace(null);
+            setPendingPlaceNotes("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{pendingPlace?.name}</DialogTitle>
+            {pendingPlace?.address && (
+              <DialogDescription>{pendingPlace.address}</DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="grid gap-2 py-2">
+            <Label htmlFor="place-spot-notes">メモ（任意）</Label>
+            <Textarea
+              id="place-spot-notes"
+              value={pendingPlaceNotes}
+              onChange={(e) => setPendingPlaceNotes(e.target.value)}
+              placeholder="このスポットについてのメモ"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={handleConfirmPlace} disabled={createSpot.isPending}>
+              行程に追加する
             </Button>
           </DialogFooter>
         </DialogContent>
