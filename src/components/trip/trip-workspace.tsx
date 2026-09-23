@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AddressSpotDialog, type AddressSpotSelection } from "./address-spot-dialog";
 import { DayColumn } from "./day-column";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
 import { TripMap, type MapPin as MapPinType } from "./trip-map";
@@ -156,6 +157,15 @@ export function TripWorkspace({
     setClickToAdd(false);
   }
 
+  async function handleAddressSelect(input: AddressSpotSelection) {
+    if (!selectedDay) {
+      toast.error("先に日程を追加してください");
+      return;
+    }
+    const spot = await createSpot.mutateAsync(input);
+    await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
+  }
+
   const pins: MapPinType[] = useMemo(
     () =>
       (selectedDay?.items ?? []).map((item, index) => ({
@@ -214,6 +224,7 @@ export function TripWorkspace({
               <MapPin className="h-4 w-4" />
               {clickToAdd ? "地図をクリックして追加中..." : "地図をクリックして独自スポットを追加"}
             </Button>
+            <AddressSpotDialog onSelect={handleAddressSelect} />
           </div>
         )}
 
