@@ -7,7 +7,6 @@ import { invites } from "@/db/schema";
 import { getTripRole, hasAtLeastRole } from "@/lib/access";
 
 const createInviteSchema = z.object({
-  email: z.string().trim().email(),
   role: z.enum(["editor", "viewer"]).default("editor"),
 });
 
@@ -36,7 +35,6 @@ export async function POST(
     .insert(invites)
     .values({
       tripId,
-      email: parsed.data.email,
       role: parsed.data.role,
       invitedByUserId: userId,
       token: randomBytes(24).toString("hex"),

@@ -61,7 +61,6 @@ export const invites = pgTable("invites", {
   tripId: uuid("trip_id")
     .notNull()
     .references(() => trips.id, { onDelete: "cascade" }),
-  email: text("email").notNull(),
   role: tripMemberRoleEnum("role").notNull().default("editor"),
   // Clerk user id of the inviter
   invitedByUserId: text("invited_by_user_id").notNull(),

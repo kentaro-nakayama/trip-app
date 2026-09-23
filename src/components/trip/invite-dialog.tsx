@@ -25,7 +25,6 @@ import {
 
 export function InviteDialog({ tripId }: { tripId: string }) {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
   const [role, setRole] = useState<"editor" | "viewer">("editor");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
@@ -34,7 +33,7 @@ export function InviteDialog({ tripId }: { tripId: string }) {
       const res = await fetch(`/api/trips/${tripId}/invites`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role }),
+        body: JSON.stringify({ role }),
       });
       if (!res.ok) throw new Error("招待の作成に失敗しました");
       return (await res.json()) as { token: string };
@@ -50,10 +49,7 @@ export function InviteDialog({ tripId }: { tripId: string }) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) {
-          setEmail("");
-          setInviteLink(null);
-        }
+        if (!next) setInviteLink(null);
       }}
     >
       <DialogTrigger render={<Button variant="outline" />}>
@@ -63,7 +59,7 @@ export function InviteDialog({ tripId }: { tripId: string }) {
         <DialogHeader>
           <DialogTitle>メンバーを招待</DialogTitle>
           <DialogDescription>
-            招待リンクを発行して、共有したい相手に送ってください。
+            招待リンクを発行して、LINEなどで共有したい相手に送ってください。
           </DialogDescription>
         </DialogHeader>
 
@@ -88,22 +84,10 @@ export function InviteDialog({ tripId }: { tripId: string }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (!email.trim()) return;
               mutate();
             }}
           >
             <div className="grid gap-4 py-2">
-              <div className="grid gap-2">
-                <Label htmlFor="invite-email">メールアドレス</Label>
-                <Input
-                  id="invite-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="example@example.com"
-                  required
-                />
-              </div>
               <div className="grid gap-2">
                 <Label>権限</Label>
                 <Select value={role} onValueChange={(v) => setRole(v as "editor" | "viewer")}>
@@ -118,7 +102,7 @@ export function InviteDialog({ tripId }: { tripId: string }) {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={isPending || !email.trim()}>
+              <Button type="submit" disabled={isPending}>
                 招待リンクを発行
               </Button>
             </DialogFooter>
