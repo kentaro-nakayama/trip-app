@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { trips, tripMembers } from "@/db/schema";
 import { resolveUsers } from "@/lib/clerk-users";
 import { assignTripAccents } from "@/lib/trip-accent";
+import { sortTripsByUpcoming } from "@/lib/trip-sort";
 import { CreateTripDialog } from "@/components/trips/create-trip-dialog";
 import { TripCard } from "@/components/trips/trip-card";
 import { UserMenu } from "@/components/profile/user-menu";
@@ -27,7 +28,8 @@ export default async function TripsPage() {
     .innerJoin(trips, eq(tripMembers.tripId, trips.id))
     .where(eq(tripMembers.userId, userId));
 
-  const tripIds = myTrips.map((trip) => trip.id);
+  const sortedTrips = sortTripsByUpcoming(myTrips);
+  const tripIds = sortedTrips.map((trip) => trip.id);
   const memberRows = tripIds.length
     ? await db
         .select({ tripId: tripMembers.tripId, userId: tripMembers.userId })
@@ -57,8 +59,8 @@ export default async function TripsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">旅行一覧</h1>
-            {myTrips.length > 0 && (
-              <p className="mt-0.5 text-sm text-zinc-500">{myTrips.length}件の旅行</p>
+            {sortedTrips.length > 0 && (
+              <p className="mt-0.5 text-sm text-zinc-500">{sortedTrips.length}件の旅行</p>
             )}
           </div>
           <div className="flex items-center gap-4">
@@ -67,7 +69,7 @@ export default async function TripsPage() {
           </div>
         </div>
 
-        {myTrips.length === 0 ? (
+        {sortedTrips.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-zinc-300 bg-white/60 px-6 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/40">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
               <Compass className="h-7 w-7" />
@@ -83,7 +85,7 @@ export default async function TripsPage() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
-            {myTrips.map((trip) => (
+            {sortedTrips.map((trip) => (
               <TripCard
                 key={trip.id}
                 trip={{ ...trip, members: membersByTrip.get(trip.id) ?? [] }}
