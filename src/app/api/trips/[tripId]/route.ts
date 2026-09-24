@@ -28,6 +28,7 @@ export async function GET(
 const updateTripSchema = z
   .object({
     name: z.string().trim().min(1).max(200),
+    description: z.string().trim().max(2000).nullable().optional(),
     startDate: z.string().nullable().optional(),
     endDate: z.string().nullable().optional(),
   })
@@ -66,6 +67,7 @@ export async function PATCH(
     .update(trips)
     .set({
       name: parsed.data.name,
+      description: parsed.data.description ?? null,
       startDate: parsed.data.startDate ?? null,
       endDate: parsed.data.endDate ?? null,
       updatedAt: new Date(),

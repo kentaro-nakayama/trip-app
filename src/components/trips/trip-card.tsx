@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { extractErrorMessage } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { cn, extractErrorMessage } from "@/lib/utils";
 
 export type TripCardData = {
   id: string;
@@ -38,13 +39,15 @@ export type TripCardData = {
   startDate: string | null;
   endDate: string | null;
   role: "owner" | "editor" | "viewer";
+  members: { id: string; name: string; imageUrl: string }[];
 };
 
-export function TripCard({ trip }: { trip: TripCardData }) {
+export function TripCard({ trip, accent }: { trip: TripCardData; accent: string }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [name, setName] = useState(trip.name);
+  const [description, setDescription] = useState(trip.description ?? "");
   const [startDate, setStartDate] = useState(trip.startDate ?? "");
   const [endDate, setEndDate] = useState(trip.endDate ?? "");
 
@@ -57,6 +60,7 @@ export function TripCard({ trip }: { trip: TripCardData }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
+          description: description.trim() || null,
           startDate: startDate || null,
           endDate: endDate || null,
         }),
@@ -88,6 +92,7 @@ export function TripCard({ trip }: { trip: TripCardData }) {
     <div className="relative">
       <Link href={`/trips/${trip.id}`}>
         <Card className="h-full transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md">
+          <div className={`-mt-4 h-8 bg-gradient-to-br ${accent}`} />
           <CardHeader>
             <CardTitle className="pr-16">{trip.name}</CardTitle>
             {(trip.startDate || trip.endDate) && (
@@ -95,10 +100,34 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                 {trip.startDate ?? "?"} 〜 {trip.endDate ?? "?"}
               </CardDescription>
             )}
-            {trip.description && (
-              <CardDescription className="line-clamp-2">{trip.description}</CardDescription>
-            )}
+            <CardDescription
+              className={cn("line-clamp-1", !trip.description && "invisible")}
+            >
+              {trip.description || " "}
+            </CardDescription>
           </CardHeader>
+          {trip.members.length > 0 && (
+            <CardFooter className="justify-between">
+              <div className="flex -space-x-2">
+                {trip.members.slice(0, 4).map((member) => (
+                  // eslint-disable-next-line @next/next/no-img-element -- external Clerk avatar URL
+                  <img
+                    key={member.id}
+                    src={member.imageUrl}
+                    alt={member.name}
+                    title={member.name}
+                    className="h-6 w-6 rounded-full border-2 border-white object-cover dark:border-zinc-900"
+                  />
+                ))}
+                {trip.members.length > 4 && (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-zinc-200 text-[10px] font-medium text-zinc-600 dark:border-zinc-900 dark:bg-zinc-700 dark:text-zinc-300">
+                    +{trip.members.length - 4}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-zinc-500">{trip.members.length}人が参加</span>
+            </CardFooter>
+          )}
         </Card>
       </Link>
 
@@ -110,6 +139,7 @@ export function TripCard({ trip }: { trip: TripCardData }) {
               setEditOpen(next);
               if (next) {
                 setName(trip.name);
+                setDescription(trip.description ?? "");
                 setStartDate(trip.startDate ?? "");
                 setEndDate(trip.endDate ?? "");
               }
@@ -117,7 +147,11 @@ export function TripCard({ trip }: { trip: TripCardData }) {
           >
             <DialogTrigger
               render={
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 bg-white/80 text-zinc-500 shadow-sm backdrop-blur-sm hover:bg-white hover:text-zinc-700"
+                />
               }
             >
               <Pencil className="h-4 w-4" />
@@ -141,6 +175,15 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor={`edit-trip-description-${trip.id}`}>メモ</Label>
+                    <Textarea
+                      id={`edit-trip-description-${trip.id}`}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="任意"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -182,7 +225,7 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-zinc-400 hover:text-destructive"
+                  className="h-7 w-7 bg-white/80 text-zinc-500 shadow-sm backdrop-blur-sm hover:bg-white hover:text-destructive"
                 />
               }
             >
