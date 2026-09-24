@@ -57,3 +57,29 @@ export type TripSummary = {
   endDate: string | null;
   myRole: "owner" | "editor" | "viewer";
 };
+
+export type SavedSpot = {
+  id: string;
+  spotListId: string;
+  name: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+  googlePlaceId: string | null;
+  notes: string | null;
+  createdAt: string;
+};
+
+export type SpotListSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  spotCount: number;
+};
+
+export type SpotListDetail = {
+  id: string;
+  name: string;
+  description: string | null;
+  spots: SavedSpot[];
+};

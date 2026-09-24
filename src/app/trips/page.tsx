@@ -10,6 +10,7 @@ import { CreateTripDialog } from "@/components/trips/create-trip-dialog";
 import { TripCard } from "@/components/trips/trip-card";
 import { UserMenu } from "@/components/profile/user-menu";
 import { HintBubble } from "@/components/onboarding/hint-bubble";
+import { ListViewToggle } from "@/components/nav/list-view-toggle";
 
 export default async function TripsPage() {
   const { userId } = await auth();
@@ -59,6 +60,7 @@ export default async function TripsPage() {
       <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12 sm:py-14">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1.5">
+            <ListViewToggle />
             <h1 className="text-3xl font-bold text-foreground">旅行一覧</h1>
             {sortedTrips.length > 0 && (
               <p className="text-xs font-medium tracking-wide text-zinc-500">

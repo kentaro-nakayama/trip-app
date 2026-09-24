@@ -98,6 +98,46 @@ export const spots = pgTable("spots", {
     .defaultNow(),
 });
 
+// A user-owned collection of bookmarked spots, independent of any trip —
+// the spot equivalent of a trip. Shown as a card on the spots list page.
+export const spotLists = pgTable("spot_lists", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Clerk user id
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// A bookmarked spot within a spot list — the spot-list equivalent of an
+// itinerary item. When one is added to a trip's itinerary, its data is
+// copied into a trip-scoped `spots` row (see /api/spots/[spotId]/add-to-trip)
+// rather than referenced directly, since `spots.tripId` is required and
+// cascades with the trip.
+export const savedSpots = pgTable("saved_spots", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  spotListId: uuid("spot_list_id")
+    .notNull()
+    .references(() => spotLists.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  address: text("address"),
+  lat: doublePrecision("lat").notNull(),
+  lng: doublePrecision("lng").notNull(),
+  googlePlaceId: text("google_place_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const itineraryDays = pgTable(
   "itinerary_days",
   {
@@ -155,6 +195,14 @@ export const invitesRelations = relations(invites, ({ one }) => ({
 export const spotsRelations = relations(spots, ({ one, many }) => ({
   trip: one(trips, { fields: [spots.tripId], references: [trips.id] }),
   itineraryItems: many(itineraryItems),
+}));
+
+export const spotListsRelations = relations(spotLists, ({ many }) => ({
+  spots: many(savedSpots),
+}));
+
+export const savedSpotsRelations = relations(savedSpots, ({ one }) => ({
+  spotList: one(spotLists, { fields: [savedSpots.spotListId], references: [spotLists.id] }),
 }));
 
 export const itineraryDaysRelations = relations(itineraryDays, ({ one, many }) => ({
