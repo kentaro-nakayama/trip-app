@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Clock, Copy, GripVertical, StickyNote, X } from "lucide-react";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { Clock, Copy, GripVertical, Loader2, StickyNote, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -21,12 +22,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { addMinutesToTime, formatDuration } from "@/lib/itinerary-time";
+import { addMinutesToTime, formatDuration, timeToMinutes } from "@/lib/itinerary-time";
+import { useSuggestedStartTime } from "@/lib/hooks/use-suggested-start-time";
+import { fetchTravelDurationMinutes } from "@/lib/travel-mode";
 import type { ItineraryItem } from "@/lib/types";
 
 export function SortableItineraryItem({
   item,
   order,
+  previousItem,
+  nextItem,
   readOnly,
   onRemove,
   onUpdateNotes,
@@ -34,6 +39,8 @@ export function SortableItineraryItem({
 }: {
   item: ItineraryItem;
   order: number;
+  previousItem: ItineraryItem | null;
+  nextItem: ItineraryItem | null;
   readOnly: boolean;
   onRemove: () => void;
   onUpdateNotes: (notes: string) => void;
@@ -41,15 +48,28 @@ export function SortableItineraryItem({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id, disabled: readOnly });
+  const routesLib = useMapsLibrary("routes");
 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(item.spot.notes ?? "");
   const [isEditingSchedule, setIsEditingSchedule] = useState(false);
-  const [startTimeDraft, setStartTimeDraft] = useState(item.startTime ?? "");
+  const [manualStartTime, setManualStartTime] = useState<string | null>(null);
   const [durationDraft, setDurationDraft] = useState(
     item.durationMinutes != null ? String(item.durationMinutes) : "",
   );
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [isCheckingNextSpot, setIsCheckingNextSpot] = useState(false);
+  const [pendingSave, setPendingSave] = useState<{
+    schedule: { startTime: string | null; durationMinutes: number | null };
+    message: string;
+  } | null>(null);
+
+  // Enabled for the whole editing session (not just when startTime is unset)
+  // so travelMinutes is available to validate against the previous spot even
+  // when overriding an already-suggested or already-set value.
+  const { suggested: suggestedStartTime, travelMinutes: travelMinutesFromPrevious } =
+    useSuggestedStartTime(isEditingSchedule, previousItem, item.spot, item.travelMode);
+  const startTimeDraft = manualStartTime ?? item.startTime ?? suggestedStartTime ?? "";
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -68,17 +88,60 @@ export function SortableItineraryItem({
   }
 
   function startEditingSchedule() {
-    setStartTimeDraft(item.startTime ?? "");
+    setManualStartTime(null);
     setDurationDraft(item.durationMinutes != null ? String(item.durationMinutes) : "");
     setIsEditingSchedule(true);
   }
 
-  function saveSchedule() {
+  async function saveSchedule() {
     const durationMinutes = durationDraft.trim() ? Number(durationDraft) : null;
-    onUpdateSchedule({
-      startTime: startTimeDraft.trim() || null,
-      durationMinutes: durationMinutes != null && !Number.isNaN(durationMinutes) ? durationMinutes : null,
-    });
+    const finalDuration =
+      durationMinutes != null && !Number.isNaN(durationMinutes) ? durationMinutes : null;
+    const finalStartTime = startTimeDraft.trim() || null;
+    const schedule = { startTime: finalStartTime, durationMinutes: finalDuration };
+
+    // Backward check: is this item's own new start time realistic given the
+    // previous spot's stay end time and the travel time to get here?
+    if (finalStartTime && previousItem?.startTime != null && travelMinutesFromPrevious != null) {
+      const minFeasible = (previousItem.durationMinutes ?? 0) + travelMinutesFromPrevious;
+      const actualGap = timeToMinutes(finalStartTime) - timeToMinutes(previousItem.startTime);
+      if (actualGap < minFeasible) {
+        setPendingSave({
+          schedule,
+          message: `前のスポット「${previousItem.spot.name}」の滞在終了時刻と移動時間を考慮すると、現実的に厳しい時刻です。このまま保存しますか？`,
+        });
+        return;
+      }
+    }
+
+    // Forward check: does this new time make the next spot's already-set
+    // start time unreachable?
+    if (finalStartTime && nextItem?.startTime && nextItem.travelMode && routesLib) {
+      setIsCheckingNextSpot(true);
+      const travelMinutes = await fetchTravelDurationMinutes(
+        routesLib,
+        item.spot,
+        nextItem.spot,
+        nextItem.travelMode,
+      );
+      setIsCheckingNextSpot(false);
+      if (travelMinutes != null) {
+        const minFeasible = (finalDuration ?? 0) + travelMinutes;
+        // Plain (non-wrapping) subtraction: unlike the forward-only suggestion
+        // math, a negative gap here always means the next spot's existing
+        // time is no longer reachable, not a legitimate next-day rollover.
+        const actualGap = timeToMinutes(nextItem.startTime) - timeToMinutes(finalStartTime);
+        if (actualGap < minFeasible) {
+          setPendingSave({
+            schedule,
+            message: `この変更を保存すると、「${nextItem.spot.name}」（${nextItem.startTime}〜）までの移動時間が現実的に厳しくなる可能性があります。このまま保存しますか？`,
+          });
+          return;
+        }
+      }
+    }
+
+    onUpdateSchedule(schedule);
     setIsEditingSchedule(false);
   }
 
@@ -221,9 +284,14 @@ export function SortableItineraryItem({
                 id={`schedule-start-${item.id}`}
                 type="time"
                 value={startTimeDraft}
-                onChange={(e) => setStartTimeDraft(e.target.value)}
+                onChange={(e) => setManualStartTime(e.target.value)}
                 className="h-8 text-xs"
               />
+              {suggestedStartTime && !item.startTime && manualStartTime === null && (
+                <p className="mt-1 text-[11px] text-zinc-500">
+                  前のスポットの滞在終了時刻と移動時間から{suggestedStartTime}を提案しています
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <Label htmlFor={`schedule-duration-${item.id}`} className="text-xs">
@@ -250,12 +318,34 @@ export function SortableItineraryItem({
             >
               キャンセル
             </Button>
-            <Button type="button" size="sm" onClick={saveSchedule}>
+            <Button type="button" size="sm" onClick={saveSchedule} disabled={isCheckingNextSpot}>
+              {isCheckingNextSpot && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               保存
             </Button>
           </div>
         </div>
       )}
+
+      <AlertDialog open={pendingSave !== null} onOpenChange={(open) => !open && setPendingSave(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>開始時刻が現実的に厳しい可能性があります</AlertDialogTitle>
+            <AlertDialogDescription>{pendingSave?.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>修正する</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingSave) onUpdateSchedule(pendingSave.schedule);
+                setPendingSave(null);
+                setIsEditingSchedule(false);
+              }}
+            >
+              このまま保存する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {!isEditingNotes && item.spot.notes && (
         <button

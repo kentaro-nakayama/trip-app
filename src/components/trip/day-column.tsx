@@ -88,6 +88,8 @@ export function DayColumn({
               <SortableItineraryItem
                 item={item}
                 order={index}
+                previousItem={index > 0 ? day.items[index - 1] : null}
+                nextItem={index < day.items.length - 1 ? day.items[index + 1] : null}
                 readOnly={readOnly}
                 onRemove={() => onRemoveItem(item.id)}
                 onUpdateNotes={(notes) => onUpdateSpotNotes(item.spotId, notes)}

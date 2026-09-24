@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
@@ -24,8 +23,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addMinutesToTime, minutesBetween } from "@/lib/itinerary-time";
-import { fetchTravelDurationMinutes, travelModeLabel, type TravelMode } from "@/lib/travel-mode";
+import { useSuggestedStartTime } from "@/lib/hooks/use-suggested-start-time";
+import { minutesBetween } from "@/lib/itinerary-time";
+import { travelModeLabel, type TravelMode } from "@/lib/travel-mode";
 import type { ItineraryItem } from "@/lib/types";
 
 export function ScheduleConfirmDialog({
@@ -43,55 +43,28 @@ export function ScheduleConfirmDialog({
   isPending: boolean;
   onConfirm: (startTime: string | null) => void;
 }) {
-  const routesLib = useMapsLibrary("routes");
-  const [travelMinutes, setTravelMinutes] = useState<number | null>(null);
   const [manualStartTime, setManualStartTime] = useState<string | null>(null);
   const [confirmEarlyOpen, setConfirmEarlyOpen] = useState(false);
 
-  // Reset per-spot state during render (not in the effect below) so a stale
-  // duration/time from the previous spot never leaks into the new one.
+  const { suggested, travelMinutes } = useSuggestedStartTime(
+    open,
+    previousItem,
+    destination,
+    travelMode,
+  );
+
+  // Reset the manually-typed value during render (not in an effect) so a
+  // stale draft from a previous spot never leaks into this one.
   const openKey =
     open && destination ? `${destination.lat},${destination.lng}:${travelMode ?? ""}` : null;
   const [trackedOpenKey, setTrackedOpenKey] = useState(openKey);
   if (openKey !== trackedOpenKey) {
     setTrackedOpenKey(openKey);
-    setTravelMinutes(null);
     setManualStartTime(null);
   }
 
-  useEffect(() => {
-    if (!open || !routesLib || !destination || !travelMode || !previousItem) return;
-    let cancelled = false;
-    fetchTravelDurationMinutes(routesLib, previousItem.spot, destination, travelMode).then(
-      (minutes) => {
-        if (!cancelled) setTravelMinutes(minutes);
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-    // Deliberately depend on primitives (not the origin/destination object
-    // identities, which are recreated every render) to avoid refetching on
-    // every render; openKey already resets state when any of these change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    open,
-    routesLib,
-    destination?.lat,
-    destination?.lng,
-    travelMode,
-    previousItem?.id,
-    previousItem?.spot.lat,
-    previousItem?.spot.lng,
-  ]);
-
   const prevStart = previousItem?.startTime ?? null;
   const prevDuration = previousItem?.durationMinutes ?? 0;
-  const suggested =
-    prevStart != null && travelMinutes != null
-      ? addMinutesToTime(prevStart, prevDuration + travelMinutes)
-      : null;
-
   const startTime = manualStartTime ?? suggested ?? "";
 
   function handleConfirmClick() {
