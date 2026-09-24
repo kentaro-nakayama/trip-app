@@ -19,9 +19,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, extractErrorMessage } from "@/lib/utils";
+import type { TravelMode } from "@/lib/travel-mode";
 import { CustomSpotDialog, type AddressSpotSelection } from "./custom-spot-dialog";
 import { DayColumn } from "./day-column";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
+import { TravelModeSelect } from "./travel-mode-select";
 import { TripMap, type MapPin as MapPinType } from "./trip-map";
 import { MembersDialog } from "./members-dialog";
 import type { TripDetail } from "@/lib/types";
@@ -96,11 +98,14 @@ export function TripWorkspace({
   } | null>(null);
   const [pendingName, setPendingName] = useState("");
   const [pendingCustomNotes, setPendingCustomNotes] = useState("");
+  const [pendingCustomTravelMode, setPendingCustomTravelMode] = useState<TravelMode>("driving");
   const [pendingPlace, setPendingPlace] = useState<PlaceSelection | null>(null);
   const [pendingPlaceNotes, setPendingPlaceNotes] = useState("");
+  const [pendingPlaceTravelMode, setPendingPlaceTravelMode] = useState<TravelMode>("driving");
 
   const readOnly = data.myRole === "viewer";
   const selectedDay = data.days.find((d) => d.id === selectedDayId) ?? data.days[0] ?? null;
+  const hasPreviousItem = (selectedDay?.items.length ?? 0) > 0;
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey });
@@ -121,11 +126,19 @@ export function TripWorkspace({
   });
 
   const addItem = useMutation({
-    mutationFn: async ({ dayId, spotId }: { dayId: string; spotId: string }) => {
+    mutationFn: async ({
+      dayId,
+      spotId,
+      travelMode,
+    }: {
+      dayId: string;
+      spotId: string;
+      travelMode?: TravelMode | null;
+    }) => {
       const res = await fetch(`/api/trips/${tripId}/itinerary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itineraryDayId: dayId, spotId }),
+        body: JSON.stringify({ itineraryDayId: dayId, spotId, travelMode }),
       });
       if (!res.ok) throw new Error(await extractErrorMessage(res, "行程への追加に失敗しました"));
       return res.json();
@@ -196,6 +209,20 @@ export function TripWorkspace({
     onError: (err) => toast.error(err instanceof Error ? err.message : "時刻の保存に失敗しました"),
   });
 
+  const updateTravelMode = useMutation({
+    mutationFn: async ({ itemId, travelMode }: { itemId: string; travelMode: TravelMode }) => {
+      const res = await fetch(`/api/trips/${tripId}/itinerary/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ travelMode }),
+      });
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "移動手段の保存に失敗しました"));
+      return res.json();
+    },
+    onSuccess: () => invalidate(),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "移動手段の保存に失敗しました"),
+  });
+
   const reorder = useMutation({
     mutationFn: async ({
       dayId,
@@ -249,6 +276,7 @@ export function TripWorkspace({
     }
     setPendingPlace(place);
     setPendingPlaceNotes("");
+    setPendingPlaceTravelMode("driving");
   }
 
   async function handleConfirmPlace() {
@@ -257,7 +285,11 @@ export function TripWorkspace({
       ...pendingPlace,
       notes: pendingPlaceNotes.trim() || undefined,
     });
-    await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
+    await addItem.mutateAsync({
+      dayId: selectedDay.id,
+      spotId: spot.id,
+      travelMode: hasPreviousItem ? pendingPlaceTravelMode : null,
+    });
     setPendingPlace(null);
     setPendingPlaceNotes("");
     toast.success("行程に追加しました");
@@ -272,7 +304,11 @@ export function TripWorkspace({
       lng: pendingLatLng.lng,
       notes: pendingCustomNotes.trim() || undefined,
     });
-    await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
+    await addItem.mutateAsync({
+      dayId: selectedDay.id,
+      spotId: spot.id,
+      travelMode: hasPreviousItem ? pendingCustomTravelMode : null,
+    });
     setPendingLatLng(null);
     setPendingName("");
     setPendingCustomNotes("");
@@ -286,7 +322,11 @@ export function TripWorkspace({
       return;
     }
     const spot = await createSpot.mutateAsync(input);
-    await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
+    await addItem.mutateAsync({
+      dayId: selectedDay.id,
+      spotId: spot.id,
+      travelMode: hasPreviousItem ? input.travelMode : null,
+    });
     toast.success("行程に追加しました");
   }
 
@@ -401,6 +441,7 @@ export function TripWorkspace({
             <div className="flex flex-col gap-2">
               <SpotSearch onSelect={handlePlaceSelect} />
               <CustomSpotDialog
+                hasPreviousItem={hasPreviousItem}
                 onChooseMapClick={() => {
                   setClickToAdd(true);
                   setMobileView("map");
@@ -436,6 +477,9 @@ export function TripWorkspace({
               onUpdateSchedule={(itemId, schedule) =>
                 updateItemSchedule.mutate({ itemId, ...schedule })
               }
+              onUpdateTravelMode={(itemId, travelMode) =>
+                updateTravelMode.mutate({ itemId, travelMode })
+              }
             />
           ) : (
             <p className="text-sm text-zinc-500">まだ日程がありません。</p>
@@ -447,7 +491,10 @@ export function TripWorkspace({
             pins={pins}
             onMapClick={
               clickToAdd
-                ? (lat, lng, address) => setPendingLatLng({ lat, lng, address })
+                ? (lat, lng, address) => {
+                    setPendingLatLng({ lat, lng, address });
+                    setPendingCustomTravelMode("driving");
+                  }
                 : undefined
             }
             onPoiClick={!readOnly && selectedDay ? handlePlaceSelect : undefined}
@@ -491,6 +538,12 @@ export function TripWorkspace({
                 placeholder="このスポットについてのメモ"
               />
             </div>
+            {hasPreviousItem && (
+              <TravelModeSelect
+                value={pendingCustomTravelMode}
+                onChange={setPendingCustomTravelMode}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button
@@ -522,15 +575,23 @@ export function TripWorkspace({
               <DialogDescription>{pendingPlace.address}</DialogDescription>
             )}
           </DialogHeader>
-          <div className="grid gap-2 py-2">
-            <Label htmlFor="place-spot-notes">メモ（任意）</Label>
-            <Textarea
-              id="place-spot-notes"
-              value={pendingPlaceNotes}
-              onChange={(e) => setPendingPlaceNotes(e.target.value)}
-              placeholder="このスポットについてのメモ"
-              autoFocus
-            />
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label htmlFor="place-spot-notes">メモ（任意）</Label>
+              <Textarea
+                id="place-spot-notes"
+                value={pendingPlaceNotes}
+                onChange={(e) => setPendingPlaceNotes(e.target.value)}
+                placeholder="このスポットについてのメモ"
+                autoFocus
+              />
+            </div>
+            {hasPreviousItem && (
+              <TravelModeSelect
+                value={pendingPlaceTravelMode}
+                onChange={setPendingPlaceTravelMode}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button

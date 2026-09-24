@@ -18,6 +18,7 @@ export type ItineraryItem = {
   order: number;
   startTime: string | null;
   durationMinutes: number | null;
+  travelMode: "walking" | "driving" | "transit" | "bicycling" | null;
   spot: Spot;
 };
 

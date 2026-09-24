@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import {
   DndContext,
   MouseSensor,
@@ -15,7 +16,9 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { SortableItineraryItem } from "./sortable-itinerary-item";
+import { TravelConnector } from "./travel-connector";
 import type { ItineraryDay } from "@/lib/types";
+import type { TravelMode } from "@/lib/travel-mode";
 
 export function DayColumn({
   day,
@@ -24,6 +27,7 @@ export function DayColumn({
   onRemoveItem,
   onUpdateSpotNotes,
   onUpdateSchedule,
+  onUpdateTravelMode,
 }: {
   day: ItineraryDay;
   readOnly: boolean;
@@ -34,6 +38,7 @@ export function DayColumn({
     itemId: string,
     schedule: { startTime: string | null; durationMinutes: number | null },
   ) => void;
+  onUpdateTravelMode: (itemId: string, travelMode: TravelMode) => void;
 }) {
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
@@ -70,15 +75,25 @@ export function DayColumn({
       <SortableContext items={day.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
         <ul className="flex flex-col gap-2">
           {day.items.map((item, index) => (
-            <SortableItineraryItem
-              key={item.id}
-              item={item}
-              order={index}
-              readOnly={readOnly}
-              onRemove={() => onRemoveItem(item.id)}
-              onUpdateNotes={(notes) => onUpdateSpotNotes(item.spotId, notes)}
-              onUpdateSchedule={(schedule) => onUpdateSchedule(item.id, schedule)}
-            />
+            <Fragment key={item.id}>
+              {index > 0 && (
+                <TravelConnector
+                  origin={day.items[index - 1].spot}
+                  destination={item.spot}
+                  travelMode={item.travelMode}
+                  onChangeMode={(mode) => onUpdateTravelMode(item.id, mode)}
+                  readOnly={readOnly}
+                />
+              )}
+              <SortableItineraryItem
+                item={item}
+                order={index}
+                readOnly={readOnly}
+                onRemove={() => onRemoveItem(item.id)}
+                onUpdateNotes={(notes) => onUpdateSpotNotes(item.spotId, notes)}
+                onUpdateSchedule={(schedule) => onUpdateSchedule(item.id, schedule)}
+              />
+            </Fragment>
           ))}
         </ul>
       </SortableContext>

@@ -9,6 +9,7 @@ import { getTripRole, hasAtLeastRole } from "@/lib/access";
 const addItemSchema = z.object({
   itineraryDayId: z.string().uuid(),
   spotId: z.string().uuid(),
+  travelMode: z.enum(["walking", "driving", "transit", "bicycling"]).nullable().optional(),
 });
 
 export async function POST(
@@ -56,6 +57,7 @@ export async function POST(
       itineraryDayId: parsed.data.itineraryDayId,
       spotId: parsed.data.spotId,
       order: (last?.order ?? -1) + 1,
+      travelMode: parsed.data.travelMode ?? null,
     })
     .returning();
 

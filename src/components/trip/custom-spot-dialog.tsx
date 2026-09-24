@@ -17,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { TravelMode } from "@/lib/travel-mode";
+import { TravelModeSelect } from "./travel-mode-select";
 
 export type AddressSpotSelection = {
   name: string;
@@ -24,16 +26,19 @@ export type AddressSpotSelection = {
   lat: number;
   lng: number;
   notes?: string;
+  travelMode?: TravelMode | null;
 };
 
 type Mode = "choose" | "address";
 
 export function CustomSpotDialog({
   disabled,
+  hasPreviousItem,
   onChooseMapClick,
   onAddressSelect,
 }: {
   disabled?: boolean;
+  hasPreviousItem: boolean;
   onChooseMapClick: () => void;
   onAddressSelect: (input: AddressSpotSelection) => Promise<void> | void;
 }) {
@@ -48,6 +53,7 @@ export function CustomSpotDialog({
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [travelMode, setTravelMode] = useState<TravelMode>("driving");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function reset() {
@@ -55,6 +61,7 @@ export function CustomSpotDialog({
     setName("");
     setAddress("");
     setNotes("");
+    setTravelMode("driving");
   }
 
   async function handleSubmit() {
@@ -75,6 +82,7 @@ export function CustomSpotDialog({
         lat: result.geometry.location.lat(),
         lng: result.geometry.location.lng(),
         notes: notes.trim() || undefined,
+        travelMode: hasPreviousItem ? travelMode : null,
       });
 
       reset();
@@ -191,6 +199,9 @@ export function CustomSpotDialog({
                   placeholder="このスポットについてのメモ"
                 />
               </div>
+              {hasPreviousItem && (
+                <TravelModeSelect value={travelMode} onChange={setTravelMode} />
+              )}
             </div>
             <DialogFooter>
               <Button type="submit" disabled={!address.trim() || !geocoder || isSubmitting}>

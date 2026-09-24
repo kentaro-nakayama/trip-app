@@ -24,6 +24,13 @@ export const inviteStatusEnum = pgEnum("invite_status", [
   "expired",
 ]);
 
+export const travelModeEnum = pgEnum("travel_mode", [
+  "walking",
+  "driving",
+  "transit",
+  "bicycling",
+]);
+
 export const trips = pgTable("trips", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
@@ -121,6 +128,8 @@ export const itineraryItems = pgTable(
     // of truth for visit sequence and drag-and-drop.
     startTime: time("start_time"),
     durationMinutes: integer("duration_minutes"),
+    // How this spot is reached from the previous item in `order`, if any.
+    travelMode: travelModeEnum("travel_mode"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

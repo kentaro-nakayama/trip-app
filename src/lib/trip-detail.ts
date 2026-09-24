@@ -69,6 +69,7 @@ export async function loadTripDetail(
         order: it.order,
         startTime: it.startTime ? it.startTime.slice(0, 5) : null,
         durationMinutes: it.durationMinutes,
+        travelMode: it.travelMode,
         spot: {
           id: it.spot.id,
           tripId: it.spot.tripId,

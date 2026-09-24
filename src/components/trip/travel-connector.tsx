@@ -1,0 +1,131 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { Bike, Car, Footprints, TrainFront } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  TRAVEL_MODES,
+  travelModeLabel,
+  travelModeToGoogle,
+  type TravelMode,
+} from "@/lib/travel-mode";
+
+const travelModeIcon: Record<TravelMode, typeof Car> = {
+  walking: Footprints,
+  driving: Car,
+  transit: TrainFront,
+  bicycling: Bike,
+};
+
+export function TravelConnector({
+  origin,
+  destination,
+  travelMode,
+  onChangeMode,
+  readOnly,
+}: {
+  origin: { lat: number; lng: number };
+  destination: { lat: number; lng: number };
+  travelMode: TravelMode | null;
+  onChangeMode: (mode: TravelMode) => void;
+  readOnly: boolean;
+}) {
+  const routesLib = useMapsLibrary("routes");
+  const [durationText, setDurationText] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  // Reset the stale result during render (not in the effect below) whenever
+  // the leg being described changes, so we never show a previous leg's
+  // duration while the new one is loading or unavailable.
+  const legKey = travelMode
+    ? `${travelMode}:${origin.lat},${origin.lng}:${destination.lat},${destination.lng}`
+    : null;
+  const [trackedLegKey, setTrackedLegKey] = useState(legKey);
+  if (legKey !== trackedLegKey) {
+    setTrackedLegKey(legKey);
+    setDurationText(null);
+    setFailed(false);
+  }
+
+  useEffect(() => {
+    if (!routesLib || !travelMode) return;
+    let cancelled = false;
+    const service = new routesLib.DistanceMatrixService();
+    service
+      .getDistanceMatrix({
+        origins: [origin],
+        destinations: [destination],
+        travelMode: travelModeToGoogle[travelMode],
+      })
+      .then((res) => {
+        if (cancelled) return;
+        const element = res.rows[0]?.elements[0];
+        if (element?.status === "OK" && element.duration) {
+          setDurationText(element.duration.text);
+          setFailed(false);
+        } else {
+          setDurationText(null);
+          setFailed(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDurationText(null);
+          setFailed(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // origin/destination are covered by legKey above; re-running only needs
+    // to track the primitive coordinates, not new object identities.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routesLib, travelMode, origin.lat, origin.lng, destination.lat, destination.lng]);
+
+  if (readOnly && !travelMode) return null;
+
+  const statusLabel = !travelMode
+    ? "移動手段を選択"
+    : durationText
+      ? `${travelModeLabel[travelMode]}で約${durationText}`
+      : failed
+        ? "所要時間を取得できませんでした"
+        : "計算中...";
+
+  if (readOnly) {
+    const Icon = travelMode ? travelModeIcon[travelMode] : null;
+    return (
+      <li className="flex list-none items-center gap-1.5 py-0.5 pl-8 text-[11px] text-zinc-500">
+        {Icon && <Icon className="h-3.5 w-3.5" />}
+        {statusLabel}
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex list-none items-center gap-1.5 py-0.5 pl-8">
+      {TRAVEL_MODES.map((mode) => {
+        const Icon = travelModeIcon[mode];
+        const active = mode === travelMode;
+        return (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => onChangeMode(mode)}
+            title={travelModeLabel[mode]}
+            className={cn(
+              "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-zinc-400 transition-colors",
+              active
+                ? "border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300"
+                : "border-transparent hover:bg-muted",
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </button>
+        );
+      })}
+      <span className="truncate text-[11px] text-zinc-500">{statusLabel}</span>
+    </li>
+  );
+}

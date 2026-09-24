@@ -10,8 +10,10 @@ const updateItemSchema = z.object({
   startTime: z
     .string()
     .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻の形式が正しくありません")
-    .nullable(),
-  durationMinutes: z.number().int().min(0).max(1440).nullable(),
+    .nullable()
+    .optional(),
+  durationMinutes: z.number().int().min(0).max(1440).nullable().optional(),
+  travelMode: z.enum(["walking", "driving", "transit", "bicycling"]).nullable().optional(),
 });
 
 export async function PATCH(
@@ -42,12 +44,14 @@ export async function PATCH(
     .limit(1);
   if (!existing) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
+  const updates: Partial<typeof itineraryItems.$inferInsert> = {};
+  if ("startTime" in parsed.data) updates.startTime = parsed.data.startTime;
+  if ("durationMinutes" in parsed.data) updates.durationMinutes = parsed.data.durationMinutes;
+  if ("travelMode" in parsed.data) updates.travelMode = parsed.data.travelMode;
+
   const [item] = await db
     .update(itineraryItems)
-    .set({
-      startTime: parsed.data.startTime,
-      durationMinutes: parsed.data.durationMinutes,
-    })
+    .set(updates)
     .where(eq(itineraryItems.id, itemId))
     .returning();
 
