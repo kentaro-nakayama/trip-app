@@ -46,7 +46,7 @@ export function ScheduleConfirmDialog({
   const [manualStartTime, setManualStartTime] = useState<string | null>(null);
   const [confirmEarlyOpen, setConfirmEarlyOpen] = useState(false);
 
-  const { suggested, travelMinutes } = useSuggestedStartTime(
+  const { suggested, travelMinutes, isLoading: isTravelTimeLoading } = useSuggestedStartTime(
     open,
     previousItem,
     destination,
@@ -91,7 +91,9 @@ export function ScheduleConfirmDialog({
                 ? "任意で開始時刻を設定できます。"
                 : travelMinutes != null
                   ? `前のスポットから${travelModeLabel[travelMode]}で約${travelMinutes}分`
-                  : "移動時間を計算中..."}
+                  : isTravelTimeLoading
+                    ? "移動時間を計算中..."
+                    : "所要時間を取得できませんでした"}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2 py-2">

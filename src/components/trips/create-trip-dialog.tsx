@@ -21,8 +21,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { extractErrorMessage } from "@/lib/utils";
 import type { TripSummary } from "@/lib/types";
 
+const PRIMARY_PILL_BUTTON_CLASS =
+  "rounded-full bg-[rgb(78,71,221)] px-[22px] py-[10px] text-sm font-bold text-white shadow-[0_4px_12px_rgba(78,71,221,0.25)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[rgb(66,60,195)] hover:shadow-[0_6px_16px_rgba(78,71,221,0.35)] active:scale-[0.96]";
+
 // Small travel-themed icons (plane / bus / suitcase) that burst out of the
-// "新しい旅行を作成" button on click, purely decorative.
+// "作成する" button the instant it's pressed, purely decorative.
 const TRAVEL_SVGS = [
   '<svg viewBox="0 0 512 512" fill="currentColor"><path d="M480 192H365.71L260.61 8.88A16 16 0 0 0 248 0h-40a16 16 0 0 0-13.43 24.69L262.24 192H112l-38.34-51.13A16 16 0 0 0 60.86 134H20a16 16 0 0 0-14.73 22.28L43.89 256 5.27 355.72A16 16 0 0 0 20 378h40.86a16 16 0 0 0 12.8-6.87L112 320h150.24l-67.67 167.31A16 16 0 0 0 208 512h40a16 16 0 0 0 12.61-8.88L365.71 320H480a32 32 0 0 0 0-64z"/></svg>',
   '<svg viewBox="0 0 512 512" fill="currentColor"><path d="M499.99 176h-59.51l-43.1-96.97C388.92 60.05 370.4 48 349.52 48H162.48c-20.88 0-39.4 12.05-47.86 31.03L71.52 176H12.01C5.38 176 0 181.38 0 188.01v68c0 6.63 5.38 12 12.01 12h20.67l7.63 118.25c.98 15.22 13.62 27.75 28.87 27.75h36.65c15.25 0 27.89-12.53 28.87-27.75L142.17 268h227.66l7.47 118.25c.98 15.22 13.62 27.75 28.87 27.75h36.65c15.25 0 27.89-12.53 28.87-27.75L479.32 268h20.67c6.63 0 12.01-5.37 12.01-12v-68c0-6.63-5.38-12.01-12.01-12.01zM112 224c-13.25 0-24-10.75-24-24s10.75-24 24-24 24 10.75 24 24-10.75 24-24 24zm288 0c-13.25 0-24-10.75-24-24s10.75-24 24-24 24 10.75 24 24-10.75 24-24 24z"/></svg>',
@@ -81,20 +84,14 @@ export function CreateTripDialog() {
   const router = useRouter();
 
   const stageRef = useRef<HTMLDivElement>(null);
-  const triggerBtnRef = useRef<HTMLButtonElement>(null);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
   const particleLayerRef = useRef<HTMLDivElement>(null);
 
-  function handleTriggerClick() {
-    const btn = triggerBtnRef.current;
+  function handleSubmitClick() {
+    const btn = submitBtnRef.current;
     const stage = stageRef.current;
     const layer = particleLayerRef.current;
     if (!btn || !stage || !layer) return;
-
-    btn.classList.remove("is-elastic");
-    // Force a reflow so the animation can be re-triggered on rapid clicks.
-    void btn.offsetWidth;
-    btn.classList.add("is-elastic");
-
     burstTravelParticles(stage, btn, layer);
   }
 
@@ -127,20 +124,10 @@ export function CreateTripDialog() {
   });
 
   return (
-    <div ref={stageRef} className="relative inline-flex">
-      <div ref={particleLayerRef} className="pointer-events-none absolute inset-0 z-50" />
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger
-          render={
-            <Button
-              ref={triggerBtnRef}
-              onClick={handleTriggerClick}
-              className="rounded-full bg-[rgb(78,71,221)] px-[22px] py-[10px] text-sm font-bold text-white shadow-[0_4px_12px_rgba(78,71,221,0.25)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[rgb(66,60,195)] hover:shadow-[0_6px_16px_rgba(78,71,221,0.35)] active:scale-[0.96]"
-            />
-          }
-        >
-          新しい旅行を作成
-        </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button className={PRIMARY_PILL_BUTTON_CLASS} />}>
+        新しい旅行を作成
+      </DialogTrigger>
       <DialogContent>
         <form
           onSubmit={(e) => {
@@ -197,14 +184,22 @@ export function CreateTripDialog() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isPending || !name.trim()}>
-              {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              作成する
-            </Button>
+            <div ref={stageRef} className="relative inline-flex">
+              <div ref={particleLayerRef} className="pointer-events-none absolute inset-0 z-50" />
+              <Button
+                ref={submitBtnRef}
+                type="submit"
+                onClick={handleSubmitClick}
+                disabled={isPending || !name.trim()}
+                className={PRIMARY_PILL_BUTTON_CLASS}
+              >
+                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                作成する
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
-      </Dialog>
-    </div>
+    </Dialog>
   );
 }

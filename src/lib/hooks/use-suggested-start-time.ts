@@ -34,6 +34,7 @@ export function useSuggestedStartTime(
   if (legKey !== trackedLegKey) {
     setTrackedLegKey(legKey);
     setTravelMinutes(null);
+    setIsLoading(legKey !== null);
   }
 
   useEffect(() => {
