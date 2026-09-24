@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
 import { DisplayNameGate } from "@/components/profile/display-name-gate";
 import { AvatarPromptGate } from "@/components/profile/avatar-prompt-gate";
+import { ListsChrome } from "@/components/nav/lists-chrome";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       >
         <body className="min-h-full flex flex-col">
           <Providers>
-            {children}
+            <ListsChrome>{children}</ListsChrome>
             <Toaster />
             <DisplayNameGate />
             <AvatarPromptGate />
