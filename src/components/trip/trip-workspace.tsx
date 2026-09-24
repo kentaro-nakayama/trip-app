@@ -27,6 +27,7 @@ import { SpotSearch, type PlaceSelection } from "./spot-search";
 import { TravelModeSelect } from "./travel-mode-select";
 import { TripMap, type MapPin as MapPinType } from "./trip-map";
 import { MembersDialog } from "./members-dialog";
+import { HintBubble } from "@/components/onboarding/hint-bubble";
 import type { TripDetail } from "@/lib/types";
 
 function reorderDayItems(
@@ -506,7 +507,11 @@ export function TripWorkspace({
           </div>
 
           {!readOnly && selectedDay && (
-            <div className="flex flex-col gap-2">
+            <HintBubble
+              id="add-spot"
+              message="Googleマップでスポットを検索するか、自分でスポットを追加して行程に加えられます。"
+              className="flex flex-col gap-2"
+            >
               <SpotSearch onSelect={handlePlaceSelect} />
               <CustomSpotDialog
                 hasPreviousItem={hasPreviousItem}
@@ -530,7 +535,7 @@ export function TripWorkspace({
                   </Button>
                 </div>
               )}
-            </div>
+            </HintBubble>
           )}
 
           {selectedDay ? (

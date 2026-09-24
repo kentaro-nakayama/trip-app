@@ -9,6 +9,7 @@ import { sortTripsByUpcoming } from "@/lib/trip-sort";
 import { CreateTripDialog } from "@/components/trips/create-trip-dialog";
 import { TripCard } from "@/components/trips/trip-card";
 import { UserMenu } from "@/components/profile/user-menu";
+import { HintBubble } from "@/components/onboarding/hint-bubble";
 
 export default async function TripsPage() {
   const { userId } = await auth();
@@ -66,7 +67,14 @@ export default async function TripsPage() {
             )}
           </div>
           <div className="flex items-center gap-4">
-            <CreateTripDialog />
+            <HintBubble
+              id="create-trip"
+              align="end"
+              message="ここから新しい旅行を作成できます。名前と日程を入力するだけで始められます。"
+              className="inline-flex"
+            >
+              <CreateTripDialog />
+            </HintBubble>
             <UserMenu />
           </div>
         </div>
