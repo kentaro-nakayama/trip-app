@@ -6,6 +6,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
 import { DisplayNameGate } from "@/components/profile/display-name-gate";
+import { AvatarPromptGate } from "@/components/profile/avatar-prompt-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
             <Toaster />
             <DisplayNameGate />
+            <AvatarPromptGate />
           </Providers>
         </body>
       </html>

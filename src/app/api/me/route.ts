@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-const updateMeSchema = z.object({
-  displayName: z.string().trim().min(1).max(50),
-});
+const updateMeSchema = z
+  .object({
+    displayName: z.string().trim().min(1).max(50).optional(),
+    avatarPromptSeen: z.literal(true).optional(),
+  })
+  .refine((data) => data.displayName !== undefined || data.avatarPromptSeen !== undefined, {
+    message: "更新する項目を指定してください",
+  });
 
 export async function PATCH(req: Request) {
   const { userId } = await auth();
@@ -15,10 +20,17 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const client = await clerkClient();
-  const user = await client.users.updateUserMetadata(userId, {
-    publicMetadata: { displayName: parsed.data.displayName },
-  });
+  const publicMetadata: { displayName?: string; avatarPromptSeen?: true } = {};
+  if (parsed.data.displayName !== undefined) publicMetadata.displayName = parsed.data.displayName;
+  if (parsed.data.avatarPromptSeen !== undefined) {
+    publicMetadata.avatarPromptSeen = parsed.data.avatarPromptSeen;
+  }
 
-  return NextResponse.json({ displayName: user.publicMetadata.displayName ?? null });
+  const client = await clerkClient();
+  const user = await client.users.updateUserMetadata(userId, { publicMetadata });
+
+  return NextResponse.json({
+    displayName: user.publicMetadata.displayName ?? null,
+    avatarPromptSeen: user.publicMetadata.avatarPromptSeen ?? false,
+  });
 }
