@@ -98,7 +98,7 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
           )}
         >
           <CardHeader>
-            <CardTitle className="pr-16">{trip.name}</CardTitle>
+            <CardTitle className="mb-1 pr-16 font-semibold">{trip.name}</CardTitle>
             <CardDescription
               className={cn(!trip.startDate && !trip.endDate && "invisible")}
             >

@@ -21,8 +21,8 @@ export default function TripsLoading() {
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle,rgba(0,0,0,0.05)_1px,transparent_1px)] [background-size:22px_22px]"
       />
-      <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">旅行一覧</h1>
+      <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12 sm:py-14">
+        <h1 className="text-3xl font-bold text-foreground">旅行一覧</h1>
 
         <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-zinc-200 bg-white/60 px-6 py-16">
           <CompassLoader />

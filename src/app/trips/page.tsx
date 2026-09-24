@@ -55,12 +55,14 @@ export default async function TripsPage() {
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle,rgba(0,0,0,0.05)_1px,transparent_1px)] [background-size:22px_22px] dark:[background-image:radial-gradient(circle,rgba(255,255,255,0.06)_1px,transparent_1px)]"
       />
-      <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-6 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">旅行一覧</h1>
+      <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12 sm:py-14">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <h1 className="text-3xl font-bold text-foreground">旅行一覧</h1>
             {sortedTrips.length > 0 && (
-              <p className="mt-0.5 text-sm text-zinc-500">{sortedTrips.length}件の旅行</p>
+              <p className="text-xs font-medium tracking-wide text-zinc-500">
+                {sortedTrips.length}件の旅行
+              </p>
             )}
           </div>
           <div className="flex items-center gap-4">
