@@ -5,6 +5,7 @@ import { jaJP } from "@clerk/localizations";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
+import { DisplayNameGate } from "@/components/profile/display-name-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Providers>
             {children}
             <Toaster />
+            <DisplayNameGate />
           </Providers>
         </body>
       </html>

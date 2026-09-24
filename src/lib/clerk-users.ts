@@ -22,7 +22,11 @@ export async function resolveUsers(userIds: string[]): Promise<Map<string, Resol
       user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)?.emailAddress ??
       user.emailAddresses[0]?.emailAddress ??
       null;
-    const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || primaryEmail || "不明なユーザー";
+    const name =
+      user.publicMetadata.displayName ||
+      [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+      primaryEmail ||
+      "不明なユーザー";
     map.set(user.id, { userId: user.id, name, email: primaryEmail, imageUrl: user.imageUrl });
   }
 

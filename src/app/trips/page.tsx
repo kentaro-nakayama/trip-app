@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { UserButton } from "@clerk/nextjs";
 import { eq, inArray } from "drizzle-orm";
 import { Compass } from "lucide-react";
 import { getDb } from "@/db";
@@ -8,6 +7,7 @@ import { resolveUsers } from "@/lib/clerk-users";
 import { assignTripAccents } from "@/lib/trip-accent";
 import { CreateTripDialog } from "@/components/trips/create-trip-dialog";
 import { TripCard } from "@/components/trips/trip-card";
+import { UserMenu } from "@/components/profile/user-menu";
 
 export default async function TripsPage() {
   const { userId } = await auth();
@@ -63,7 +63,7 @@ export default async function TripsPage() {
           </div>
           <div className="flex items-center gap-4">
             <CreateTripDialog />
-            <UserButton />
+            <UserMenu />
           </div>
         </div>
 
