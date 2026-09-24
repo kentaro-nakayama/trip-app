@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { extractErrorMessage } from "@/lib/utils";
 
 export type TripCardData = {
   id: string;
@@ -60,31 +61,33 @@ export function TripCard({ trip }: { trip: TripCardData }) {
           endDate: endDate || null,
         }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "旅行の更新に失敗しました"));
     },
     onSuccess: () => {
       setEditOpen(false);
       router.refresh();
+      toast.success("旅行を更新しました");
     },
-    onError: () => toast.error("旅行の更新に失敗しました"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "旅行の更新に失敗しました"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/trips/${trip.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "旅行の削除に失敗しました"));
     },
     onSuccess: () => {
       setDeleteOpen(false);
       router.refresh();
+      toast.success("旅行を削除しました");
     },
-    onError: () => toast.error("旅行の削除に失敗しました"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "旅行の削除に失敗しました"),
   });
 
   return (
     <div className="relative">
       <Link href={`/trips/${trip.id}`}>
-        <Card className="h-full transition-colors hover:border-zinc-400">
+        <Card className="h-full transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md">
           <CardHeader>
             <CardTitle className="pr-16">{trip.name}</CardTitle>
             {(trip.startDate || trip.endDate) && (
@@ -163,6 +166,7 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                 </div>
                 <DialogFooter>
                   <Button type="submit" disabled={!name.trim() || editMutation.isPending}>
+                    {editMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                     保存する
                   </Button>
                 </DialogFooter>
@@ -198,6 +202,7 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                   disabled={deleteMutation.isPending}
                   className="bg-destructive text-white hover:bg-destructive/90"
                 >
+                  {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   削除する
                 </AlertDialogAction>
               </AlertDialogFooter>

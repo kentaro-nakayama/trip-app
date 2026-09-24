@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { toast } from "sonner";
-import { ChevronLeft, MapPin, Type } from "lucide-react";
+import { ChevronLeft, Loader2, MapPin, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -194,6 +194,7 @@ export function CustomSpotDialog({
             </div>
             <DialogFooter>
               <Button type="submit" disabled={!address.trim() || !geocoder || isSubmitting}>
+                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 追加する
               </Button>
             </DialogFooter>

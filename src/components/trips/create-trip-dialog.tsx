@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { extractErrorMessage } from "@/lib/utils";
 import type { TripSummary } from "@/lib/types";
 
 export function CreateTripDialog() {
@@ -40,7 +42,7 @@ export function CreateTripDialog() {
           endDate: endDate || undefined,
         }),
       });
-      if (!res.ok) throw new Error("旅行の作成に失敗しました");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "旅行の作成に失敗しました"));
       return (await res.json()) as TripSummary;
     },
     onSuccess: (trip) => {
@@ -50,9 +52,10 @@ export function CreateTripDialog() {
       setDescription("");
       setStartDate("");
       setEndDate("");
+      toast.success("旅行を作成しました");
       router.push(`/trips/${trip.id}`);
     },
-    onError: () => toast.error("旅行の作成に失敗しました"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "旅行の作成に失敗しました"),
   });
 
   return (
@@ -115,6 +118,7 @@ export function CreateTripDialog() {
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isPending || !name.trim()}>
+              {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               作成する
             </Button>
           </DialogFooter>

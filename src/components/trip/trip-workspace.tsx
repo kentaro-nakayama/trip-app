@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { toast } from "sonner";
-import { ArrowLeft, List, Map as MapIcon, Plus } from "lucide-react";
+import { ArrowLeft, List, Loader2, Map as MapIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,12 +18,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn, extractErrorMessage } from "@/lib/utils";
 import { CustomSpotDialog, type AddressSpotSelection } from "./custom-spot-dialog";
 import { DayColumn } from "./day-column";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
 import { TripMap, type MapPin as MapPinType } from "./trip-map";
-import { InviteDialog } from "./invite-dialog";
+import { MembersDialog } from "./members-dialog";
 import type { TripDetail } from "@/lib/types";
 
 function reorderDayItems(
@@ -109,14 +109,15 @@ export function TripWorkspace({
   const createDay = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/trips/${tripId}/days`, { method: "POST" });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "日程の追加に失敗しました"));
       return res.json();
     },
     onSuccess: (day) => {
       invalidate();
       setSelectedDayId(day.id);
+      toast.success("日程を追加しました");
     },
-    onError: () => toast.error("日程の追加に失敗しました"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "日程の追加に失敗しました"),
   });
 
   const addItem = useMutation({
@@ -126,11 +127,11 @@ export function TripWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itineraryDayId: dayId, spotId }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "行程への追加に失敗しました"));
       return res.json();
     },
     onSuccess: () => invalidate(),
-    onError: () => toast.error("行程への追加に失敗しました"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "行程への追加に失敗しました"),
   });
 
   const createSpot = useMutation({
@@ -147,9 +148,10 @@ export function TripWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "スポットの作成に失敗しました"));
       return res.json();
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "スポットの作成に失敗しました"),
   });
 
   const updateSpotNotes = useMutation({
@@ -159,11 +161,14 @@ export function TripWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes: notes || null }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "メモの保存に失敗しました"));
       return res.json();
     },
-    onSuccess: () => invalidate(),
-    onError: () => toast.error("メモの保存に失敗しました"),
+    onSuccess: () => {
+      invalidate();
+      toast.success("メモを保存しました");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "メモの保存に失敗しました"),
   });
 
   const reorder = useMutation({
@@ -179,7 +184,7 @@ export function TripWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itineraryDayId: dayId, orderedItemIds }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "並び替えに失敗しました"));
     },
     onMutate: async ({ dayId, orderedItemIds }) => {
       await queryClient.cancelQueries({ queryKey });
@@ -203,10 +208,13 @@ export function TripWorkspace({
       const res = await fetch(`/api/trips/${tripId}/itinerary/${itemId}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "削除に失敗しました"));
     },
-    onSuccess: () => invalidate(),
-    onError: () => toast.error("削除に失敗しました"),
+    onSuccess: () => {
+      invalidate();
+      toast.success("削除しました");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "削除に失敗しました"),
   });
 
   function handlePlaceSelect(place: PlaceSelection) {
@@ -227,6 +235,7 @@ export function TripWorkspace({
     await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
     setPendingPlace(null);
     setPendingPlaceNotes("");
+    toast.success("行程に追加しました");
   }
 
   async function handleConfirmCustomSpot() {
@@ -243,6 +252,7 @@ export function TripWorkspace({
     setPendingName("");
     setPendingCustomNotes("");
     setClickToAdd(false);
+    toast.success("行程に追加しました");
   }
 
   async function handleAddressSelect(input: AddressSpotSelection) {
@@ -252,6 +262,7 @@ export function TripWorkspace({
     }
     const spot = await createSpot.mutateAsync(input);
     await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id });
+    toast.success("行程に追加しました");
   }
 
   const pins: MapPinType[] = useMemo(
@@ -288,7 +299,7 @@ export function TripWorkspace({
             )}
           </div>
         </div>
-        {!readOnly && <InviteDialog tripId={tripId} />}
+        <MembersDialog tripId={tripId} myRole={data.myRole} />
       </div>
 
       <div className="grid shrink-0 grid-cols-2 gap-1 border-b p-2 md:hidden">
@@ -339,7 +350,7 @@ export function TripWorkspace({
                 )}
               </div>
             </div>
-            {!readOnly && <InviteDialog tripId={tripId} />}
+            <MembersDialog tripId={tripId} myRole={data.myRole} />
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -456,8 +467,11 @@ export function TripWorkspace({
           <DialogFooter>
             <Button
               onClick={handleConfirmCustomSpot}
-              disabled={!pendingName.trim() || createSpot.isPending}
+              disabled={!pendingName.trim() || createSpot.isPending || addItem.isPending}
             >
+              {(createSpot.isPending || addItem.isPending) && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
               追加する
             </Button>
           </DialogFooter>
@@ -491,7 +505,13 @@ export function TripWorkspace({
             />
           </div>
           <DialogFooter>
-            <Button onClick={handleConfirmPlace} disabled={createSpot.isPending}>
+            <Button
+              onClick={handleConfirmPlace}
+              disabled={createSpot.isPending || addItem.isPending}
+            >
+              {(createSpot.isPending || addItem.isPending) && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
               行程に追加する
             </Button>
           </DialogFooter>

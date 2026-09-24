@@ -71,7 +71,7 @@ export function SortableItineraryItem({
     <li
       ref={setNodeRef}
       style={style}
-      className="flex flex-col gap-2 rounded-md border bg-white p-2 dark:bg-zinc-900"
+      className="flex flex-col gap-2 rounded-md border bg-white p-2 transition-shadow duration-150 hover:shadow-md dark:bg-zinc-900"
     >
       <div className="flex items-start gap-2">
         <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
@@ -109,11 +109,11 @@ export function SortableItineraryItem({
               type="button"
               variant="ghost"
               size="icon"
-              className="mt-0.5 h-7 w-7 shrink-0 cursor-grab touch-none"
+              className="mt-0.5 h-9 w-9 shrink-0 cursor-grab touch-none"
               {...attributes}
               {...listeners}
             >
-              <ArrowUpDown className="h-4 w-4" />
+              <ArrowUpDown className="h-5 w-5" />
             </Button>
             <AlertDialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
               <AlertDialogTrigger
