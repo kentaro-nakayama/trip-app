@@ -91,8 +91,12 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
   return (
     <div className="relative">
       <Link href={`/trips/${trip.id}`}>
-        <Card className="h-full transition-all duration-150 hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md">
-          <div className={`-mt-4 h-8 bg-gradient-to-br ${accent}`} />
+        <Card
+          className={cn(
+            "h-full border-l-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md",
+            accent,
+          )}
+        >
           <CardHeader>
             <CardTitle className="pr-16">{trip.name}</CardTitle>
             {(trip.startDate || trip.endDate) && (
@@ -147,11 +151,7 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
           >
             <DialogTrigger
               render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 bg-white/80 text-zinc-500 shadow-sm backdrop-blur-sm hover:bg-white hover:text-zinc-700"
-                />
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400" />
               }
             >
               <Pencil className="h-4 w-4" />
@@ -225,7 +225,7 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 bg-white/80 text-zinc-500 shadow-sm backdrop-blur-sm hover:bg-white hover:text-destructive"
+                  className="h-7 w-7 text-zinc-400 hover:text-destructive"
                 />
               }
             >
