@@ -31,7 +31,7 @@ export default async function SpotsPage() {
 
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-bold text-foreground">スポット一覧</h1>
           {rows.length > 0 && (

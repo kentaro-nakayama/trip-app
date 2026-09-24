@@ -20,7 +20,11 @@ export function ListsChrome({ children }: { children: ReactNode }) {
   if (!LIST_PATHS.has(pathname)) return <>{children}</>;
 
   return (
-    <div className="relative flex flex-1 flex-col bg-[url('/lists-background.jpeg')] bg-cover bg-center bg-no-repeat">
+    <div className="relative flex flex-1 flex-col bg-gradient-to-b from-indigo-50/70 via-white to-white dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-950">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle,rgba(0,0,0,0.05)_1px,transparent_1px)] [background-size:22px_22px] dark:[background-image:radial-gradient(circle,rgba(255,255,255,0.06)_1px,transparent_1px)]"
+      />
       <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12 sm:py-14">
         <div className="flex items-center justify-between gap-4">
           <ListViewToggle />
