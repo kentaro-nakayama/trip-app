@@ -16,6 +16,8 @@ export type ItineraryItem = {
   itineraryDayId: string;
   spotId: string;
   order: number;
+  startTime: string | null;
+  durationMinutes: number | null;
   spot: Spot;
 };
 

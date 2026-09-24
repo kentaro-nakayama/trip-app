@@ -171,6 +171,31 @@ export function TripWorkspace({
     onError: (err) => toast.error(err instanceof Error ? err.message : "メモの保存に失敗しました"),
   });
 
+  const updateItemSchedule = useMutation({
+    mutationFn: async ({
+      itemId,
+      startTime,
+      durationMinutes,
+    }: {
+      itemId: string;
+      startTime: string | null;
+      durationMinutes: number | null;
+    }) => {
+      const res = await fetch(`/api/trips/${tripId}/itinerary/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startTime, durationMinutes }),
+      });
+      if (!res.ok) throw new Error(await extractErrorMessage(res, "時刻の保存に失敗しました"));
+      return res.json();
+    },
+    onSuccess: () => {
+      invalidate();
+      toast.success("時刻を保存しました");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "時刻の保存に失敗しました"),
+  });
+
   const reorder = useMutation({
     mutationFn: async ({
       dayId,
@@ -408,6 +433,9 @@ export function TripWorkspace({
               }
               onRemoveItem={(itemId) => removeItem.mutate(itemId)}
               onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
+              onUpdateSchedule={(itemId, schedule) =>
+                updateItemSchedule.mutate({ itemId, ...schedule })
+              }
             />
           ) : (
             <p className="text-sm text-zinc-500">まだ日程がありません。</p>

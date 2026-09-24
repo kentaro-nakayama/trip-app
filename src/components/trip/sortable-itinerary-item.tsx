@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Copy, GripVertical, StickyNote, X } from "lucide-react";
+import { Clock, Copy, GripVertical, StickyNote, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -17,8 +17,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { addMinutesToTime, formatDuration } from "@/lib/itinerary-time";
 import type { ItineraryItem } from "@/lib/types";
 
 export function SortableItineraryItem({
@@ -27,18 +30,25 @@ export function SortableItineraryItem({
   readOnly,
   onRemove,
   onUpdateNotes,
+  onUpdateSchedule,
 }: {
   item: ItineraryItem;
   order: number;
   readOnly: boolean;
   onRemove: () => void;
   onUpdateNotes: (notes: string) => void;
+  onUpdateSchedule: (schedule: { startTime: string | null; durationMinutes: number | null }) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id, disabled: readOnly });
 
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState(item.spot.notes ?? "");
+  const [isEditingSchedule, setIsEditingSchedule] = useState(false);
+  const [startTimeDraft, setStartTimeDraft] = useState(item.startTime ?? "");
+  const [durationDraft, setDurationDraft] = useState(
+    item.durationMinutes != null ? String(item.durationMinutes) : "",
+  );
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
 
   const style = {
@@ -55,6 +65,31 @@ export function SortableItineraryItem({
   function saveNotes() {
     onUpdateNotes(notesDraft.trim());
     setIsEditingNotes(false);
+  }
+
+  function startEditingSchedule() {
+    setStartTimeDraft(item.startTime ?? "");
+    setDurationDraft(item.durationMinutes != null ? String(item.durationMinutes) : "");
+    setIsEditingSchedule(true);
+  }
+
+  function saveSchedule() {
+    const durationMinutes = durationDraft.trim() ? Number(durationDraft) : null;
+    onUpdateSchedule({
+      startTime: startTimeDraft.trim() || null,
+      durationMinutes: durationMinutes != null && !Number.isNaN(durationMinutes) ? durationMinutes : null,
+    });
+    setIsEditingSchedule(false);
+  }
+
+  function scheduleLabel(): string | null {
+    if (item.startTime && item.durationMinutes != null) {
+      const end = addMinutesToTime(item.startTime, item.durationMinutes);
+      return `${item.startTime} 〜 ${end}（${formatDuration(item.durationMinutes)}）`;
+    }
+    if (item.startTime) return `${item.startTime} 〜`;
+    if (item.durationMinutes != null) return `（${formatDuration(item.durationMinutes)}）`;
+    return null;
   }
 
   async function copyAddress() {
@@ -87,6 +122,11 @@ export function SortableItineraryItem({
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{item.spot.name}</p>
+          {!isEditingSchedule && scheduleLabel() && (
+            <p className="text-[11px] font-medium text-blue-700 dark:text-blue-400">
+              {scheduleLabel()}
+            </p>
+          )}
           {item.spot.address && (
             <button
               type="button"
@@ -102,6 +142,22 @@ export function SortableItineraryItem({
         </div>
         {!readOnly && (
           <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "mt-0.5 h-7 w-7 shrink-0",
+                (item.startTime || item.durationMinutes != null) &&
+                  "text-blue-600 dark:text-blue-400",
+              )}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() =>
+                isEditingSchedule ? setIsEditingSchedule(false) : startEditingSchedule()
+              }
+            >
+              <Clock className="h-4 w-4" />
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -153,6 +209,53 @@ export function SortableItineraryItem({
           </>
         )}
       </div>
+
+      {isEditingSchedule && (
+        <div className="flex flex-col gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label htmlFor={`schedule-start-${item.id}`} className="text-xs">
+                開始時刻
+              </Label>
+              <Input
+                id={`schedule-start-${item.id}`}
+                type="time"
+                value={startTimeDraft}
+                onChange={(e) => setStartTimeDraft(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="flex-1">
+              <Label htmlFor={`schedule-duration-${item.id}`} className="text-xs">
+                所要時間（分）
+              </Label>
+              <Input
+                id={`schedule-duration-${item.id}`}
+                type="number"
+                min={0}
+                step={5}
+                value={durationDraft}
+                onChange={(e) => setDurationDraft(e.target.value)}
+                placeholder="例: 60"
+                className="h-8 text-xs"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditingSchedule(false)}
+            >
+              キャンセル
+            </Button>
+            <Button type="button" size="sm" onClick={saveSchedule}>
+              保存
+            </Button>
+          </div>
+        </div>
+      )}
 
       {!isEditingNotes && item.spot.notes && (
         <button

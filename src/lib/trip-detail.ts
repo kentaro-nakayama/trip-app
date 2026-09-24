@@ -67,6 +67,8 @@ export async function loadTripDetail(
         itineraryDayId: it.itineraryDayId,
         spotId: it.spotId,
         order: it.order,
+        startTime: it.startTime ? it.startTime.slice(0, 5) : null,
+        durationMinutes: it.durationMinutes,
         spot: {
           id: it.spot.id,
           tripId: it.spot.tripId,

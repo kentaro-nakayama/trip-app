@@ -23,12 +23,17 @@ export function DayColumn({
   onReorder,
   onRemoveItem,
   onUpdateSpotNotes,
+  onUpdateSchedule,
 }: {
   day: ItineraryDay;
   readOnly: boolean;
   onReorder: (orderedItemIds: string[]) => void;
   onRemoveItem: (itemId: string) => void;
   onUpdateSpotNotes: (spotId: string, notes: string) => void;
+  onUpdateSchedule: (
+    itemId: string,
+    schedule: { startTime: string | null; durationMinutes: number | null },
+  ) => void;
 }) {
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
@@ -72,6 +77,7 @@ export function DayColumn({
               readOnly={readOnly}
               onRemove={() => onRemoveItem(item.id)}
               onUpdateNotes={(notes) => onUpdateSpotNotes(item.spotId, notes)}
+              onUpdateSchedule={(schedule) => onUpdateSchedule(item.id, schedule)}
             />
           ))}
         </ul>

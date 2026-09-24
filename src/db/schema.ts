@@ -6,6 +6,7 @@ import {
   integer,
   doublePrecision,
   date,
+  time,
   pgEnum,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
@@ -116,6 +117,10 @@ export const itineraryItems = pgTable(
       .references(() => spots.id, { onDelete: "cascade" }),
     // Visit order within the day; pins/route on the map follow this order
     order: integer("order").notNull(),
+    // Optional schedule info; independent of `order`, which stays the source
+    // of truth for visit sequence and drag-and-drop.
+    startTime: time("start_time"),
+    durationMinutes: integer("duration_minutes"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
