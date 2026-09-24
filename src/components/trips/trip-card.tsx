@@ -99,11 +99,11 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
         >
           <CardHeader>
             <CardTitle className="pr-16">{trip.name}</CardTitle>
-            {(trip.startDate || trip.endDate) && (
-              <CardDescription>
-                {trip.startDate ?? "?"} 〜 {trip.endDate ?? "?"}
-              </CardDescription>
-            )}
+            <CardDescription
+              className={cn(!trip.startDate && !trip.endDate && "invisible")}
+            >
+              {trip.startDate ?? "?"} 〜 {trip.endDate ?? "?"}
+            </CardDescription>
             <CardDescription
               className={cn("line-clamp-1", !trip.description && "invisible")}
             >
