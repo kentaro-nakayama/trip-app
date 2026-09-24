@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ParticleBurstButton } from "@/components/ui/particle-burst-button";
 import { extractErrorMessage } from "@/lib/utils";
 import type { SpotListSummary } from "@/lib/types";
 
@@ -87,10 +88,10 @@ export function CreateSpotListDialog() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isPending || !name.trim()}>
+            <ParticleBurstButton type="submit" disabled={isPending || !name.trim()}>
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               作成する
-            </Button>
+            </ParticleBurstButton>
           </DialogFooter>
         </form>
       </DialogContent>
