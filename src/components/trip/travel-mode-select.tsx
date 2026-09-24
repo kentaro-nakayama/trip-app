@@ -35,7 +35,7 @@ export function TravelModeSelect({
               className={cn(
                 "flex flex-1 flex-col items-center gap-1 rounded-lg border py-2 text-xs transition-colors",
                 active
-                  ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                  ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
                   : "border-border text-zinc-500 hover:bg-muted",
               )}
             >

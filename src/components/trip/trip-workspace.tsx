@@ -517,13 +517,13 @@ export function TripWorkspace({
                 onAddressSelect={handleAddressSelect}
               />
               {clickToAdd && (
-                <div className="flex items-center justify-between gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+                <div className="flex items-center justify-between gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
                   <span>地図をクリックしてスポットを追加してください</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-2 text-blue-700 hover:text-blue-800 dark:text-blue-300"
+                    className="h-6 px-2 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300"
                     onClick={() => setClickToAdd(false)}
                   >
                     キャンセル

@@ -119,7 +119,7 @@ export function TravelConnector({
             className={cn(
               "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-zinc-400 transition-colors",
               active
-                ? "border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300"
+                ? "border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300"
                 : "border-transparent hover:bg-muted",
             )}
           >

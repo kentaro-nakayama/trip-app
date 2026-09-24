@@ -180,13 +180,13 @@ export function SortableItineraryItem({
         {!readOnly && (
           <GripVertical className="mt-1.5 h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" />
         )}
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white">
           {order + 1}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{item.spot.name}</p>
           {!isEditingSchedule && scheduleLabel() && (
-            <p className="text-[11px] font-medium text-blue-700 dark:text-blue-400">
+            <p className="text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
               {scheduleLabel()}
             </p>
           )}
@@ -212,7 +212,7 @@ export function SortableItineraryItem({
               className={cn(
                 "mt-0.5 h-7 w-7 shrink-0",
                 (item.startTime || item.durationMinutes != null) &&
-                  "text-blue-600 dark:text-blue-400",
+                  "text-indigo-600 dark:text-indigo-400",
               )}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() =>
@@ -227,7 +227,7 @@ export function SortableItineraryItem({
               size="icon"
               className={cn(
                 "mt-0.5 h-7 w-7 shrink-0",
-                item.spot.notes && "text-blue-600 dark:text-blue-400",
+                item.spot.notes && "text-indigo-600 dark:text-indigo-400",
               )}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => (isEditingNotes ? setIsEditingNotes(false) : startEditing())}

@@ -35,7 +35,7 @@ function RouteArrows({ pins }: { pins: MapPin[] }) {
                   scale: 3.5,
                   strokeColor: "#ffffff",
                   strokeWeight: 1,
-                  fillColor: "#2563eb",
+                  fillColor: "#4E47DD",
                   fillOpacity: 1,
                 },
                 offset: "50%",
@@ -144,7 +144,7 @@ export function TripMap({
         <>
           <Polyline
             path={pins.map((pin) => ({ lat: pin.lat, lng: pin.lng }))}
-            strokeColor="#2563eb"
+            strokeColor="#4E47DD"
             strokeOpacity={0.8}
             strokeWeight={3}
           />
@@ -153,7 +153,7 @@ export function TripMap({
       )}
       {pins.map((pin) => (
         <AdvancedMarker key={pin.id} position={{ lat: pin.lat, lng: pin.lng }} title={pin.name}>
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-blue-600 text-sm font-semibold text-white shadow">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-sm font-semibold text-white shadow">
             {pin.order + 1}
           </div>
         </AdvancedMarker>
