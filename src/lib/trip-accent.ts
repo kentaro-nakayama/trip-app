@@ -1,12 +1,14 @@
+// Pastel palette (one shade per hue family, matched for consistent
+// saturation/lightness) referenced from https://hibicolor.com/hibilab/pastel-color/
 const ACCENTS = [
-  "border-sky-500",
-  "border-violet-500",
-  "border-rose-500",
-  "border-orange-500",
-  "border-emerald-500",
-  "border-lime-600",
-  "border-blue-600",
-  "border-fuchsia-500",
+  "border-[#FFB3B3]", // 赤（コーラル）
+  "border-[#FFDCB3]", // オレンジ
+  "border-[#FFF4B3]", // 黄
+  "border-[#A6E1CA]", // 緑
+  "border-[#9CC7C5]", // 青緑
+  "border-[#A6D8E4]", // 青
+  "border-[#D3BCE8]", // 紫
+  "border-[#FFB6C1]", // ピンク
 ];
 
 function hashToIndex(id: string, mod: number): number {
