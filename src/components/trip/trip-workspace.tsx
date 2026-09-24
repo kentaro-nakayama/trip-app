@@ -52,6 +52,20 @@ function reorderDayItems(
   };
 }
 
+function updateItemTravelMode(
+  trip: TripDetail,
+  itemId: string,
+  travelMode: TravelMode,
+): TripDetail {
+  return {
+    ...trip,
+    days: trip.days.map((day) => ({
+      ...day,
+      items: day.items.map((item) => (item.id === itemId ? { ...item, travelMode } : item)),
+    })),
+  };
+}
+
 async function fetchTrip(tripId: string): Promise<TripDetail> {
   const res = await fetch(`/api/trips/${tripId}`);
   if (!res.ok) throw new Error("旅行の取得に失敗しました");
@@ -230,8 +244,21 @@ export function TripWorkspace({
       if (!res.ok) throw new Error(await extractErrorMessage(res, "移動手段の保存に失敗しました"));
       return res.json();
     },
-    onSuccess: () => invalidate(),
-    onError: (err) => toast.error(err instanceof Error ? err.message : "移動手段の保存に失敗しました"),
+    onMutate: async ({ itemId, travelMode }) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<TripDetail>(queryKey);
+      if (previous) {
+        queryClient.setQueryData<TripDetail>(
+          queryKey,
+          updateItemTravelMode(previous, itemId, travelMode),
+        );
+      }
+      return { previous };
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+      toast.error(err instanceof Error ? err.message : "移動手段の保存に失敗しました");
+    },
   });
 
   const reorder = useMutation({
