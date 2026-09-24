@@ -4,7 +4,6 @@ import { Compass } from "lucide-react";
 import { getDb } from "@/db";
 import { trips, tripMembers } from "@/db/schema";
 import { resolveUsers } from "@/lib/clerk-users";
-import { assignTripAccents } from "@/lib/trip-accent";
 import { sortTripsByUpcoming } from "@/lib/trip-sort";
 import { CreateTripDialog } from "@/components/trips/create-trip-dialog";
 import { TripCard } from "@/components/trips/trip-card";
@@ -47,8 +46,6 @@ export default async function TripsPage() {
     membersByTrip.set(row.tripId, list);
   }
 
-  const accents = assignTripAccents(tripIds);
-
   return (
     <>
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
@@ -90,7 +87,6 @@ export default async function TripsPage() {
             <TripCard
               key={trip.id}
               trip={{ ...trip, members: membersByTrip.get(trip.id) ?? [] }}
-              accent={accents.get(trip.id)!}
             />
           ))}
         </div>

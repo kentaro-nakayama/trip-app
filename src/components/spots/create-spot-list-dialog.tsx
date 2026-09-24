@@ -51,7 +51,13 @@ export function CreateSpotListDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>新しいスポットリストを作成</DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button className="bg-[rgb(78,71,221)] shadow-[0_1px_2px_rgba(24,24,27,0.06),0_5px_14px_-2px_rgba(78,71,221,0.28)] hover:bg-[rgb(66,60,195)]" />
+        }
+      >
+        新しいスポットリストを作成
+      </DialogTrigger>
       <DialogContent>
         <form
           onSubmit={(e) => {

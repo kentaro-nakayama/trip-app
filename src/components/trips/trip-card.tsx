@@ -30,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CARD_GLOW } from "@/lib/card-glow";
 import { cn, extractErrorMessage } from "@/lib/utils";
 
 export type TripCardData = {
@@ -42,7 +43,7 @@ export type TripCardData = {
   members: { id: string; name: string; imageUrl: string }[];
 };
 
-export function TripCard({ trip, accent }: { trip: TripCardData; accent: string }) {
+export function TripCard({ trip }: { trip: TripCardData }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -94,7 +95,7 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
         <Card
           className={cn(
             "h-full transition-all duration-150 hover:-translate-y-0.5",
-            accent,
+            CARD_GLOW,
           )}
         >
           <CardHeader>

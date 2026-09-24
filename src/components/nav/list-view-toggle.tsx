@@ -13,7 +13,7 @@ export function ListViewToggle() {
   const pathname = usePathname();
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white/60 p-1 dark:border-zinc-700 dark:bg-zinc-900/40">
+    <div className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white/60 p-1 shadow-[0_1px_2px_rgba(24,24,27,0.06),0_4px_10px_rgba(24,24,27,0.07)] dark:border-zinc-700 dark:bg-zinc-900/40">
       {TABS.map((tab) => {
         const active = pathname === tab.href;
         return (

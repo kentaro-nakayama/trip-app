@@ -10,15 +10,17 @@ export function UserMenu() {
 
   return (
     <>
-      <UserButton>
-        <UserButton.MenuItems>
-          <UserButton.Action
-            label="表示名を変更"
-            labelIcon={<UserRoundPen className="h-4 w-4" />}
-            onClick={() => setNameDialogOpen(true)}
-          />
-        </UserButton.MenuItems>
-      </UserButton>
+      <div className="inline-flex rounded-full shadow-[0_1px_2px_rgba(24,24,27,0.06),0_4px_10px_rgba(24,24,27,0.07)]">
+        <UserButton>
+          <UserButton.MenuItems>
+            <UserButton.Action
+              label="表示名を変更"
+              labelIcon={<UserRoundPen className="h-4 w-4" />}
+              onClick={() => setNameDialogOpen(true)}
+            />
+          </UserButton.MenuItems>
+        </UserButton>
+      </div>
       <DisplayNameDialog open={nameDialogOpen} onOpenChange={setNameDialogOpen} dismissible />
     </>
   );

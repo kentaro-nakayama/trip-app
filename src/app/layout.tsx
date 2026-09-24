@@ -26,10 +26,24 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider localization={jaJP}>
+    <ClerkProvider
+      localization={jaJP}
+      appearance={{
+        variables: {
+          colorPrimary: "rgb(129, 122, 245)",
+          colorBackground: "#0a0a0a",
+          colorForeground: "#fafafa",
+          colorInput: "#18181b",
+          colorInputForeground: "#fafafa",
+          colorNeutral: "#fafafa",
+          colorShimmer: "#27272a",
+        },
+      }}
+    >
       <html
         lang="ja"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+        style={{ colorScheme: "dark" }}
       >
         <body className="min-h-full flex flex-col">
           <Providers>

@@ -493,6 +493,10 @@ export function TripWorkspace({
                 key={day.id}
                 size="sm"
                 variant={day.id === selectedDay?.id ? "default" : "outline"}
+                className={cn(
+                  day.id === selectedDay?.id &&
+                    "bg-[rgb(78,71,221)] hover:bg-[rgb(66,60,195)]",
+                )}
                 onClick={() => setSelectedDayId(day.id)}
               >
                 {formatDayLabel(day, index)}

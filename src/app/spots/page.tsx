@@ -3,7 +3,6 @@ import { desc, eq, sql } from "drizzle-orm";
 import { MapPinned } from "lucide-react";
 import { getDb } from "@/db";
 import { savedSpots, spotLists } from "@/db/schema";
-import { assignTripAccents } from "@/lib/trip-accent";
 import { CreateSpotListDialog } from "@/components/spots/create-spot-list-dialog";
 import { SpotListCard } from "@/components/spots/spot-list-card";
 
@@ -24,10 +23,6 @@ export default async function SpotsPage() {
     .where(eq(spotLists.userId, userId))
     .groupBy(spotLists.id)
     .orderBy(desc(spotLists.createdAt));
-
-  // Reuses the trip accent ramp: it hashes on id alone, so it works for any
-  // list of ids, not just trips.
-  const accents = assignTripAccents(rows.map((row) => row.id));
 
   return (
     <>
@@ -60,7 +55,7 @@ export default async function SpotsPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
           {rows.map((spotList) => (
-            <SpotListCard key={spotList.id} spotList={spotList} accent={accents.get(spotList.id)!} />
+            <SpotListCard key={spotList.id} spotList={spotList} />
           ))}
         </div>
       )}
