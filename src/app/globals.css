@@ -30,6 +30,70 @@
   animation: elastic-pill-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* Compass-needle loading indicator, shown during page transitions. */
+@keyframes spinNeedle {
+  0% {
+    transform: rotate(0deg);
+  }
+  70% {
+    transform: rotate(760deg);
+  }
+  85% {
+    transform: rotate(710deg);
+  }
+  100% {
+    transform: rotate(720deg);
+  }
+}
+.compass-needle {
+  animation: spinNeedle 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: center center;
+}
+
+@keyframes pulseOpacity {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.pulse-ring-stroke {
+  animation: pulseOpacity 2s ease-in-out infinite;
+}
+
+/* Skeleton shimmer sweep, used by loading.tsx placeholder cards. */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-effect::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.5) 20%,
+    rgba(255, 255, 255, 0.8) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.8s infinite;
+  content: "";
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
