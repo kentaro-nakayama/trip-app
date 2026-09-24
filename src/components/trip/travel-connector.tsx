@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { Bike, Car, Footprints, TrainFront } from "lucide-react";
+import { ArrowDown, Bike, Car, Footprints, TrainFront } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   TRAVEL_MODES,
@@ -96,7 +96,8 @@ export function TravelConnector({
   if (readOnly) {
     const Icon = travelMode ? travelModeIcon[travelMode] : null;
     return (
-      <li className="flex list-none items-center gap-1.5 py-0.5 pl-8 text-[11px] text-zinc-500">
+      <li className="flex list-none items-center gap-1.5 py-0.5 pl-3 text-[11px] text-zinc-500">
+        <ArrowDown className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {statusLabel}
       </li>
@@ -104,7 +105,8 @@ export function TravelConnector({
   }
 
   return (
-    <li className="flex list-none items-center gap-1.5 py-0.5 pl-8">
+    <li className="flex list-none items-center gap-1.5 py-0.5 pl-3">
+      <ArrowDown className="h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
       {TRAVEL_MODES.map((mode) => {
         const Icon = travelModeIcon[mode];
         const active = mode === travelMode;
