@@ -1,14 +1,12 @@
-// Pastel palette (one shade per hue family, matched for consistent
-// saturation/lightness) referenced from https://hibicolor.com/hibilab/pastel-color/
+// Chic black/blue/white theme: a tonal ramp from near-black navy down to
+// pale ice blue, staying within one cohesive monochrome-blue family.
 const ACCENTS = [
-  "border-[#FFB3B3]", // 赤（コーラル）
-  "border-[#FFDCB3]", // オレンジ
-  "border-[#FFF4B3]", // 黄
-  "border-[#A6E1CA]", // 緑
-  "border-[#9CC7C5]", // 青緑
-  "border-[#A6D8E4]", // 青
-  "border-[#D3BCE8]", // 紫
-  "border-[#FFB6C1]", // ピンク
+  "border-[#0F1B2D]", // ほぼ黒（ネイビーブラック）
+  "border-[#1F3A5F]", // ダークネイビー
+  "border-[#2F5C8A]", // ミッドブルー
+  "border-[#4A80B5]", // ブルー
+  "border-[#7FADD6]", // ライトブルー
+  "border-[#BBD6EC]", // ペールブルー
 ];
 
 function hashToIndex(id: string, mod: number): number {
