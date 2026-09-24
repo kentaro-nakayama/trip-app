@@ -15,3 +15,19 @@ export function addMinutesToTime(time: string, minutes: number): string {
   const nextM = total % 60;
   return `${String(nextH).padStart(2, "0")}:${String(nextM).padStart(2, "0")}`;
 }
+
+/** Converts an "HH:MM" time string to minutes since midnight. */
+export function timeToMinutes(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/**
+ * Minutes elapsed from `from` to `to` (both "HH:MM"), assuming `to` is on the
+ * same day or wraps to the next day (never more than 24h later).
+ */
+export function minutesBetween(from: string, to: string): number {
+  const f = timeToMinutes(from);
+  const t = timeToMinutes(to);
+  return t >= f ? t - f : t + 1440 - f;
+}

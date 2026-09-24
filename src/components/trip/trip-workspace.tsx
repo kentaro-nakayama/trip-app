@@ -22,6 +22,7 @@ import { cn, extractErrorMessage } from "@/lib/utils";
 import type { TravelMode } from "@/lib/travel-mode";
 import { CustomSpotDialog, type AddressSpotSelection } from "./custom-spot-dialog";
 import { DayColumn } from "./day-column";
+import { ScheduleConfirmDialog } from "./schedule-confirm-dialog";
 import { SpotSearch, type PlaceSelection } from "./spot-search";
 import { TravelModeSelect } from "./travel-mode-select";
 import { TripMap, type MapPin as MapPinType } from "./trip-map";
@@ -102,10 +103,18 @@ export function TripWorkspace({
   const [pendingPlace, setPendingPlace] = useState<PlaceSelection | null>(null);
   const [pendingPlaceNotes, setPendingPlaceNotes] = useState("");
   const [pendingPlaceTravelMode, setPendingPlaceTravelMode] = useState<TravelMode>("driving");
+  const [pendingSchedule, setPendingSchedule] = useState<{
+    dayId: string;
+    spotId: string;
+    spotLat: number;
+    spotLng: number;
+    travelMode: TravelMode | null;
+  } | null>(null);
 
   const readOnly = data.myRole === "viewer";
   const selectedDay = data.days.find((d) => d.id === selectedDayId) ?? data.days[0] ?? null;
   const hasPreviousItem = (selectedDay?.items.length ?? 0) > 0;
+  const previousItem = selectedDay?.items[selectedDay.items.length - 1] ?? null;
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey });
@@ -130,15 +139,17 @@ export function TripWorkspace({
       dayId,
       spotId,
       travelMode,
+      startTime,
     }: {
       dayId: string;
       spotId: string;
       travelMode?: TravelMode | null;
+      startTime?: string | null;
     }) => {
       const res = await fetch(`/api/trips/${tripId}/itinerary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itineraryDayId: dayId, spotId, travelMode }),
+        body: JSON.stringify({ itineraryDayId: dayId, spotId, travelMode, startTime }),
       });
       if (!res.ok) throw new Error(await extractErrorMessage(res, "行程への追加に失敗しました"));
       return res.json();
@@ -285,14 +296,20 @@ export function TripWorkspace({
       ...pendingPlace,
       notes: pendingPlaceNotes.trim() || undefined,
     });
-    await addItem.mutateAsync({
-      dayId: selectedDay.id,
-      spotId: spot.id,
-      travelMode: hasPreviousItem ? pendingPlaceTravelMode : null,
-    });
     setPendingPlace(null);
     setPendingPlaceNotes("");
-    toast.success("行程に追加しました");
+    if (hasPreviousItem) {
+      setPendingSchedule({
+        dayId: selectedDay.id,
+        spotId: spot.id,
+        spotLat: spot.lat,
+        spotLng: spot.lng,
+        travelMode: pendingPlaceTravelMode,
+      });
+    } else {
+      await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id, travelMode: null });
+      toast.success("行程に追加しました");
+    }
   }
 
   async function handleConfirmCustomSpot() {
@@ -304,16 +321,22 @@ export function TripWorkspace({
       lng: pendingLatLng.lng,
       notes: pendingCustomNotes.trim() || undefined,
     });
-    await addItem.mutateAsync({
-      dayId: selectedDay.id,
-      spotId: spot.id,
-      travelMode: hasPreviousItem ? pendingCustomTravelMode : null,
-    });
     setPendingLatLng(null);
     setPendingName("");
     setPendingCustomNotes("");
     setClickToAdd(false);
-    toast.success("行程に追加しました");
+    if (hasPreviousItem) {
+      setPendingSchedule({
+        dayId: selectedDay.id,
+        spotId: spot.id,
+        spotLat: spot.lat,
+        spotLng: spot.lng,
+        travelMode: pendingCustomTravelMode,
+      });
+    } else {
+      await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id, travelMode: null });
+      toast.success("行程に追加しました");
+    }
   }
 
   async function handleAddressSelect(input: AddressSpotSelection) {
@@ -322,11 +345,29 @@ export function TripWorkspace({
       return;
     }
     const spot = await createSpot.mutateAsync(input);
+    if (hasPreviousItem) {
+      setPendingSchedule({
+        dayId: selectedDay.id,
+        spotId: spot.id,
+        spotLat: spot.lat,
+        spotLng: spot.lng,
+        travelMode: input.travelMode ?? null,
+      });
+    } else {
+      await addItem.mutateAsync({ dayId: selectedDay.id, spotId: spot.id, travelMode: null });
+      toast.success("行程に追加しました");
+    }
+  }
+
+  async function handleConfirmSchedule(startTime: string | null) {
+    if (!pendingSchedule) return;
     await addItem.mutateAsync({
-      dayId: selectedDay.id,
-      spotId: spot.id,
-      travelMode: hasPreviousItem ? input.travelMode : null,
+      dayId: pendingSchedule.dayId,
+      spotId: pendingSchedule.spotId,
+      travelMode: pendingSchedule.travelMode,
+      startTime,
     });
+    setPendingSchedule(null);
     toast.success("行程に追加しました");
   }
 
@@ -606,6 +647,17 @@ export function TripWorkspace({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ScheduleConfirmDialog
+        open={pendingSchedule !== null}
+        previousItem={previousItem}
+        destination={
+          pendingSchedule ? { lat: pendingSchedule.spotLat, lng: pendingSchedule.spotLng } : null
+        }
+        travelMode={pendingSchedule?.travelMode ?? null}
+        isPending={addItem.isPending}
+        onConfirm={handleConfirmSchedule}
+      />
     </div>
   );
 

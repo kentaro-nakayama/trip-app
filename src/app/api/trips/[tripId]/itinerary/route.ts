@@ -10,6 +10,11 @@ const addItemSchema = z.object({
   itineraryDayId: z.string().uuid(),
   spotId: z.string().uuid(),
   travelMode: z.enum(["walking", "driving", "transit", "bicycling"]).nullable().optional(),
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻の形式が正しくありません")
+    .nullable()
+    .optional(),
 });
 
 export async function POST(
@@ -58,6 +63,7 @@ export async function POST(
       spotId: parsed.data.spotId,
       order: (last?.order ?? -1) + 1,
       travelMode: parsed.data.travelMode ?? null,
+      startTime: parsed.data.startTime ?? null,
     })
     .returning();
 

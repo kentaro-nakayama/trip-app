@@ -16,3 +16,27 @@ export const travelModeToGoogle: Record<TravelMode, google.maps.TravelMode> = {
   transit: "TRANSIT" as google.maps.TravelMode,
   bicycling: "BICYCLING" as google.maps.TravelMode,
 };
+
+/** Resolves the travel duration (in whole minutes) between two points, or null if unavailable. */
+export async function fetchTravelDurationMinutes(
+  routesLib: google.maps.RoutesLibrary,
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number },
+  mode: TravelMode,
+): Promise<number | null> {
+  try {
+    const service = new routesLib.DistanceMatrixService();
+    const res = await service.getDistanceMatrix({
+      origins: [origin],
+      destinations: [destination],
+      travelMode: travelModeToGoogle[mode],
+    });
+    const element = res.rows[0]?.elements[0];
+    if (element?.status === "OK" && element.duration) {
+      return Math.round(element.duration.value / 60);
+    }
+  } catch {
+    // Treated the same as "unavailable" by callers.
+  }
+  return null;
+}
