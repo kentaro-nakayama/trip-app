@@ -84,7 +84,7 @@ export default async function TripsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             {sortedTrips.map((trip) => (
               <TripCard
                 key={trip.id}

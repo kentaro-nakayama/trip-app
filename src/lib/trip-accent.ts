@@ -1,12 +1,23 @@
-// Chic black/blue/white theme: a tonal ramp from near-black navy down to
-// pale ice blue, staying within one cohesive monochrome-blue family.
+// Chic blue/white theme: a tonal ramp of blues, staying within one cohesive
+// monochrome-blue family (no near-black — kept purely blue).
+// No crisp ring/border at all. Two blurred shadow layers per color: a small
+// "core" glow close to the edge, plus a softer, wider bloom. Both used to be
+// the same alpha for every color, which made the darker hues (which contrast
+// far more against a white card) look much more prominent than the pale
+// ones. Each color's alpha is now tuned individually — darker hues get a
+// lower alpha, paler hues get a higher one — so all five read with roughly
+// the same visual weight at rest, and intensify by a similar amount on hover.
 const ACCENTS = [
-  "border-[#0F1B2D]", // ほぼ黒（ネイビーブラック）
-  "border-[#1F3A5F]", // ダークネイビー
-  "border-[#2F5C8A]", // ミッドブルー
-  "border-[#4A80B5]", // ブルー
-  "border-[#7FADD6]", // ライトブルー
-  "border-[#BBD6EC]", // ペールブルー
+  // ダークネイビー
+  "shadow-[0_0_4px_0px_#1F3A5F33,0_0_12px_-3px_#1F3A5F59] hover:shadow-[0_0_5px_0px_#1F3A5F59,0_0_14px_-3px_#1F3A5F80]",
+  // ミッドブルー
+  "shadow-[0_0_4px_0px_#2F5C8A47,0_0_12px_-3px_#2F5C8A73] hover:shadow-[0_0_5px_0px_#2F5C8A6E,0_0_14px_-3px_#2F5C8A99]",
+  // ブルー
+  "shadow-[0_0_4px_0px_#4A80B559,0_0_12px_-3px_#4A80B594] hover:shadow-[0_0_5px_0px_#4A80B580,0_0_14px_-3px_#4A80B5BA]",
+  // ライトブルー
+  "shadow-[0_0_4px_0px_#7FADD67A,0_0_12px_-3px_#7FADD6C7] hover:shadow-[0_0_5px_0px_#7FADD6A1,0_0_14px_-3px_#7FADD6ED]",
+  // ペールブルー
+  "shadow-[0_0_4px_0px_#BBD6EC99,0_0_12px_-3px_#BBD6EC] hover:shadow-[0_0_5px_0px_#BBD6ECBF,0_0_14px_-3px_#BBD6EC]",
 ];
 
 function hashToIndex(id: string, mod: number): number {
@@ -17,13 +28,13 @@ function hashToIndex(id: string, mod: number): number {
   return hash % mod;
 }
 
-/** Deterministically picks a border accent color for a single trip, based on its id. */
+/** Deterministically picks a glow accent color for a single trip, based on its id. */
 export function getTripAccent(tripId: string): string {
   return ACCENTS[hashToIndex(tripId, ACCENTS.length)];
 }
 
 /**
- * Assigns a border accent color to each trip id, avoiding duplicates within the
+ * Assigns a glow accent color to each trip id, avoiding duplicates within the
  * same list as long as there are enough colors to go around.
  */
 export function assignTripAccents(tripIds: string[]): Map<string, string> {

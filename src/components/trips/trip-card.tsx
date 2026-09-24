@@ -93,7 +93,7 @@ export function TripCard({ trip, accent }: { trip: TripCardData; accent: string 
       <Link href={`/trips/${trip.id}`}>
         <Card
           className={cn(
-            "h-full border-l-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md",
+            "h-full transition-all duration-150 hover:-translate-y-0.5",
             accent,
           )}
         >
