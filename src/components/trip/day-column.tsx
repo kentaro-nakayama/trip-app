@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import {
   DndContext,
   MouseSensor,
@@ -15,6 +15,7 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+import { HintBubble } from "@/components/onboarding/hint-bubble";
 import { SortableItineraryItem } from "./sortable-itinerary-item";
 import { TravelConnector } from "./travel-connector";
 import type { ItineraryDay } from "@/lib/types";
@@ -73,32 +74,53 @@ export function DayColumn({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={day.items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-        <ul className="flex flex-col gap-2">
-          {day.items.map((item, index) => (
-            <Fragment key={item.id}>
-              {index > 0 && (
-                <TravelConnector
-                  origin={day.items[index - 1].spot}
-                  destination={item.spot}
-                  travelMode={item.travelMode}
-                  onChangeMode={(mode) => onUpdateTravelMode(item.id, mode)}
+        <HintBubbleIfReorderable enabled={!readOnly && day.items.length > 1}>
+          <ul className="flex flex-col gap-2">
+            {day.items.map((item, index) => (
+              <Fragment key={item.id}>
+                {index > 0 && (
+                  <TravelConnector
+                    origin={day.items[index - 1].spot}
+                    destination={item.spot}
+                    travelMode={item.travelMode}
+                    onChangeMode={(mode) => onUpdateTravelMode(item.id, mode)}
+                    readOnly={readOnly}
+                  />
+                )}
+                <SortableItineraryItem
+                  item={item}
+                  order={index}
+                  previousItem={index > 0 ? day.items[index - 1] : null}
+                  nextItem={index < day.items.length - 1 ? day.items[index + 1] : null}
                   readOnly={readOnly}
+                  onRemove={() => onRemoveItem(item.id)}
+                  onUpdateNotes={(notes) => onUpdateSpotNotes(item.spotId, notes)}
+                  onUpdateSchedule={(schedule) => onUpdateSchedule(item.id, schedule)}
                 />
-              )}
-              <SortableItineraryItem
-                item={item}
-                order={index}
-                previousItem={index > 0 ? day.items[index - 1] : null}
-                nextItem={index < day.items.length - 1 ? day.items[index + 1] : null}
-                readOnly={readOnly}
-                onRemove={() => onRemoveItem(item.id)}
-                onUpdateNotes={(notes) => onUpdateSpotNotes(item.spotId, notes)}
-                onUpdateSchedule={(schedule) => onUpdateSchedule(item.id, schedule)}
-              />
-            </Fragment>
-          ))}
-        </ul>
+              </Fragment>
+            ))}
+          </ul>
+        </HintBubbleIfReorderable>
       </SortableContext>
     </DndContext>
+  );
+}
+
+// Only wraps with the drag-to-reorder hint when there's actually more than
+// one item to reorder and the viewer can drag; otherwise renders children
+// as-is so the hint never shows for a single-item (nothing to reorder) or
+// read-only day.
+function HintBubbleIfReorderable({
+  enabled,
+  children,
+}: {
+  enabled: boolean;
+  children: ReactNode;
+}) {
+  if (!enabled) return <>{children}</>;
+  return (
+    <HintBubble id="reorder-drag" message="カードをドラッグすると、行程の順番を並び替えられます。">
+      {children}
+    </HintBubble>
   );
 }

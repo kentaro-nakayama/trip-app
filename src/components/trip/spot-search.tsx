@@ -57,7 +57,7 @@ export function SpotSearch({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="スポット名や住所で検索して追加"
-          className="pl-8"
+          className="pl-8 md:placeholder:text-[0.8rem]"
         />
       </div>
       {inputValue && (suggestions.length > 0 || isLoading) && (

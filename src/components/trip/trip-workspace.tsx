@@ -413,7 +413,7 @@ export function TripWorkspace({
           <div>
             <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
             {(data.startDate || data.endDate) && (
-              <p className="text-xs text-zinc-500">
+              <p className="text-[17px] text-zinc-500">
                 {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
               </p>
             )}
@@ -464,7 +464,7 @@ export function TripWorkspace({
               <div>
                 <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
                 {(data.startDate || data.endDate) && (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-[17px] text-zinc-500">
                     {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
                   </p>
                 )}

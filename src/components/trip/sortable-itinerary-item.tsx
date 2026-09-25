@@ -184,9 +184,9 @@ export function SortableItineraryItem({
           {order + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{item.spot.name}</p>
+          <p className="truncate text-[16px] font-medium">{item.spot.name}</p>
           {!isEditingSchedule && scheduleLabel() && (
-            <p className="text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
+            <p className="text-[16px] font-medium text-indigo-700 dark:text-indigo-400">
               {scheduleLabel()}
             </p>
           )}
@@ -196,10 +196,10 @@ export function SortableItineraryItem({
               onClick={copyAddress}
               onPointerDown={(e) => e.stopPropagation()}
               title="タップして住所をコピー"
-              className="block w-full text-left text-[11px] leading-snug break-words text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+              className="block w-full text-left text-[17px] leading-snug break-words text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
             >
               {item.spot.address}
-              <Copy className="ml-1 inline h-2.5 w-2.5 align-text-bottom" />
+              <Copy className="ml-1 inline h-3.5 w-3.5 align-text-bottom text-zinc-400 dark:text-zinc-300" />
             </button>
           )}
         </div>

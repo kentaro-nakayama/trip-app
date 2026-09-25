@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { HintBubble } from "@/components/onboarding/hint-bubble";
 import { extractErrorMessage } from "@/lib/utils";
 
 type Member = {
@@ -216,6 +217,11 @@ export function MembersDialog({
   });
 
   return (
+    <HintBubble
+      id="invite-members"
+      align="end"
+      message={`「メンバー」から招待リンクを発行すると、他の人をこの${resourceLabel}に招待して一緒に編集できます。`}
+    >
     <Dialog
       open={open}
       onOpenChange={(next) => {
@@ -314,5 +320,6 @@ export function MembersDialog({
         )}
       </DialogContent>
     </Dialog>
+    </HintBubble>
   );
 }

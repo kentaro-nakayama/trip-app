@@ -102,7 +102,16 @@ export function CustomSpotDialog({
         if (!next) reset();
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" disabled={disabled} />}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            className="text-[16px] md:text-[0.8rem]"
+          />
+        }
+      >
         自分でスポットを追加
       </DialogTrigger>
       <DialogContent>
