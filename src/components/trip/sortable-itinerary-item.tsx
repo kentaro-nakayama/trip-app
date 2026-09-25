@@ -170,7 +170,7 @@ export function SortableItineraryItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex flex-col gap-2 rounded-xl border bg-white p-2 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg dark:bg-zinc-900",
+        "flex flex-col gap-2 overflow-hidden rounded-xl border bg-white p-2 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg dark:bg-zinc-900",
         !readOnly && "cursor-grab active:cursor-grabbing",
       )}
       {...(!readOnly ? attributes : {})}

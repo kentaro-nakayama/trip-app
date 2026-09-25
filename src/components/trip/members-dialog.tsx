@@ -284,7 +284,7 @@ export function MembersDialog({
                     createInvite.mutate();
                   }}
                 >
-                  <div className="grid gap-4">
+                  <div className="grid gap-4 pb-4">
                     <div className="grid gap-2">
                       <Label>権限</Label>
                       <Select
