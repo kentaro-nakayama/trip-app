@@ -19,7 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ParticleBurstButton } from "@/components/ui/particle-burst-button";
-import { extractErrorMessage } from "@/lib/utils";
+import { CARD_GLOW } from "@/lib/card-glow";
+import { cn, extractErrorMessage } from "@/lib/utils";
 import type { SpotListSummary } from "@/lib/types";
 
 export function CreateSpotListDialog() {
@@ -53,7 +54,12 @@ export function CreateSpotListDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="bg-[rgb(76,71,205)] shadow-[0_1px_2px_rgba(24,24,27,0.06),0_5px_14px_-2px_rgba(76,71,205,0.28)] hover:bg-[rgb(65,60,174)]" />
+          <Button
+            className={cn(
+              "border border-zinc-400 bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)] dark:border-zinc-500",
+              CARD_GLOW,
+            )}
+          />
         }
       >
         新しいスポットリストを作成
