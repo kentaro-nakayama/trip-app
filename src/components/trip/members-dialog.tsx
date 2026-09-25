@@ -130,7 +130,7 @@ function MemberRow({
             value={member.role}
             onValueChange={(v) => updateRole.mutate(v as "editor" | "viewer")}
           >
-            <SelectTrigger className="h-8 w-[7.5rem] text-xs" disabled={updateRole.isPending}>
+            <SelectTrigger className="h-8 w-[7.5rem]" disabled={updateRole.isPending}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

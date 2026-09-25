@@ -166,5 +166,8 @@
   }
   html {
     @apply font-sans;
+    /* Scales every rem-based Tailwind text size up (text-sm, text-base, …)
+       for better mobile readability. */
+    font-size: 112.5%;
   }
 }
