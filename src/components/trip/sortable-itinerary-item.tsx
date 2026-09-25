@@ -285,7 +285,7 @@ export function SortableItineraryItem({
                 type="time"
                 value={startTimeDraft}
                 onChange={(e) => setManualStartTime(e.target.value)}
-                className="h-8 text-xs"
+                className="h-8"
               />
               {suggestedStartTime && !item.startTime && manualStartTime === null && (
                 <p className="mt-1 text-[11px] text-zinc-500">
@@ -305,7 +305,7 @@ export function SortableItineraryItem({
                 value={durationDraft}
                 onChange={(e) => setDurationDraft(e.target.value)}
                 placeholder="例: 60"
-                className="h-8 text-xs"
+                className="h-8"
               />
             </div>
           </div>
@@ -367,7 +367,7 @@ export function SortableItineraryItem({
             value={notesDraft}
             onChange={(e) => setNotesDraft(e.target.value)}
             placeholder="このスポットについてのメモ"
-            className="min-h-16 text-xs"
+            className="min-h-16"
             autoFocus
           />
           <div className="flex justify-end gap-1.5">

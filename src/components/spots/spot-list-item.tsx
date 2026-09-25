@@ -141,7 +141,7 @@ export function SpotListItem({
             value={notesDraft}
             onChange={(e) => setNotesDraft(e.target.value)}
             placeholder="このスポットについてのメモ"
-            className="min-h-16 text-xs"
+            className="min-h-16"
             autoFocus
           />
           <div className="flex justify-end gap-1.5">
