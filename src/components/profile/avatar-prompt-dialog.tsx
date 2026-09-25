@@ -74,7 +74,7 @@ export function AvatarPromptDialog({ open }: { open: boolean }) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-zinc-300 transition-colors hover:border-[rgb(78,71,221)]"
+            className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-zinc-300 transition-colors hover:border-[rgb(77,71,213)]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- user-picked local file preview / external Clerk avatar URL */}
             <img

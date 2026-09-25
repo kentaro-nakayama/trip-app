@@ -23,7 +23,7 @@ export function ListViewToggle() {
             className={cn(
               "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
               active
-                ? "bg-[rgb(78,71,221)] text-white shadow-sm"
+                ? "bg-[rgb(77,71,213)] text-white shadow-sm"
                 : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200",
             )}
           >

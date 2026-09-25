@@ -60,13 +60,13 @@ export function HintBubble({
         <div
           role="tooltip"
           className={cn(
-            "absolute top-full z-40 mt-2 w-56 animate-in fade-in-0 zoom-in-95 rounded-xl bg-[rgb(78,71,221)] px-3 py-2.5 text-xs leading-relaxed text-white shadow-lg",
+            "absolute top-full z-40 mt-2 w-56 animate-in fade-in-0 zoom-in-95 rounded-xl bg-[rgb(77,71,213)] px-3 py-2.5 text-xs leading-relaxed text-white shadow-lg",
             align === "center" ? "left-1/2 -translate-x-1/2" : "right-0",
           )}
         >
           <div
             className={cn(
-              "absolute -top-1.5 h-3 w-3 rotate-45 bg-[rgb(78,71,221)]",
+              "absolute -top-1.5 h-3 w-3 rotate-45 bg-[rgb(77,71,213)]",
               align === "center" ? "left-1/2 -translate-x-1/2" : "right-4",
             )}
           />
