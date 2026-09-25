@@ -63,7 +63,7 @@ export function CreateTripDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="bg-[rgb(77,71,213)] shadow-[0_1px_2px_rgba(24,24,27,0.06),0_5px_14px_-2px_rgba(77,71,213,0.28)] hover:bg-[rgb(65,60,187)]" />
+          <Button className="bg-[rgb(76,71,205)] shadow-[0_1px_2px_rgba(24,24,27,0.06),0_5px_14px_-2px_rgba(76,71,205,0.28)] hover:bg-[rgb(65,60,174)]" />
         }
       >
         新しい旅行を作成

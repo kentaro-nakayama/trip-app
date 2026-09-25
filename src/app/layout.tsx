@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       localization={jaJP}
       appearance={{
         variables: {
-          colorPrimary: "rgb(77, 71, 213)",
+          colorPrimary: "rgb(76, 71, 205)",
           colorBackground: "#0a0a0a",
           colorForeground: "#fafafa",
           colorInput: "#18181b",

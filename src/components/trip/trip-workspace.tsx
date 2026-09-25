@@ -481,7 +481,7 @@ export function TripWorkspace({
                 variant={day.id === selectedDay?.id ? "default" : "outline"}
                 className={cn(
                   day.id === selectedDay?.id &&
-                    "bg-[rgb(77,71,213)] hover:bg-[rgb(65,60,187)]",
+                    "bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)]",
                 )}
                 onClick={() => setSelectedDayId(day.id)}
               >

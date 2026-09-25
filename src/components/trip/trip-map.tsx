@@ -35,7 +35,7 @@ function RouteArrows({ pins }: { pins: MapPin[] }) {
                   scale: 3.5,
                   strokeColor: "#ffffff",
                   strokeWeight: 1,
-                  fillColor: "#4E47DD",
+                  fillColor: "#4C47CD",
                   fillOpacity: 1,
                 },
                 offset: "50%",
@@ -144,7 +144,7 @@ export function TripMap({
         <>
           <Polyline
             path={pins.map((pin) => ({ lat: pin.lat, lng: pin.lng }))}
-            strokeColor="#4E47DD"
+            strokeColor="#4C47CD"
             strokeOpacity={0.8}
             strokeWeight={3}
           />
