@@ -285,7 +285,8 @@ export function SortableItineraryItem({
                 type="time"
                 value={startTimeDraft}
                 onChange={(e) => setManualStartTime(e.target.value)}
-                className="h-8"
+                className="h-8 w-[140px] max-w-full"
+                style={{ width: 140 }}
               />
               {suggestedStartTime && !item.startTime && manualStartTime === null && (
                 <p className="mt-1 text-[11px] text-zinc-500">
@@ -305,7 +306,8 @@ export function SortableItineraryItem({
                 value={durationDraft}
                 onChange={(e) => setDurationDraft(e.target.value)}
                 placeholder="例: 60"
-                className="h-8"
+                className="h-8 w-[140px] max-w-full"
+                style={{ width: 140 }}
               />
             </div>
           </div>
