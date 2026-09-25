@@ -39,8 +39,8 @@ export function CreateTripDialog() {
         body: JSON.stringify({
           name,
           description: description || undefined,
-          startDate: startDate || undefined,
-          endDate: endDate || undefined,
+          startDate,
+          endDate,
         }),
       });
       if (!res.ok) throw new Error(await extractErrorMessage(res, "旅行の作成に失敗しました"));
@@ -72,7 +72,7 @@ export function CreateTripDialog() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (!name.trim()) return;
+            if (!name.trim() || !startDate || !endDate) return;
             mutate();
           }}
         >
@@ -110,6 +110,7 @@ export function CreateTripDialog() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  required
                 />
               </div>
               <div className="grid gap-2">
@@ -118,13 +119,18 @@ export function CreateTripDialog() {
                   id="trip-end"
                   type="date"
                   value={endDate}
+                  min={startDate || undefined}
                   onChange={(e) => setEndDate(e.target.value)}
+                  required
                 />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <ParticleBurstButton type="submit" disabled={isPending || !name.trim()}>
+            <ParticleBurstButton
+              type="submit"
+              disabled={isPending || !name.trim() || !startDate || !endDate}
+            >
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               作成する
             </ParticleBurstButton>

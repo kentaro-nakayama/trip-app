@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TripPlan",
+  title: "TabiPath",
   description: "旅行の行程をみんなで作る",
 };
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { toast } from "sonner";
-import { ArrowLeft, List, Loader2, Map as MapIcon, Plus } from "lucide-react";
+import { ArrowLeft, List, Loader2, Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -134,20 +134,6 @@ export function TripWorkspace({
   function invalidate() {
     queryClient.invalidateQueries({ queryKey });
   }
-
-  const createDay = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`/api/trips/${tripId}/days`, { method: "POST" });
-      if (!res.ok) throw new Error(await extractErrorMessage(res, "日程の追加に失敗しました"));
-      return res.json();
-    },
-    onSuccess: (day) => {
-      invalidate();
-      setSelectedDayId(day.id);
-      toast.success("日程を追加しました");
-    },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "日程の追加に失敗しました"),
-  });
 
   const addItem = useMutation({
     mutationFn: async ({
@@ -502,12 +488,6 @@ export function TripWorkspace({
                 {formatDayLabel(day, index)}
               </Button>
             ))}
-            {!readOnly && !(data.startDate && data.endDate) && (
-              <Button size="sm" variant="ghost" onClick={() => createDay.mutate()}>
-                <Plus className="h-4 w-4" />
-                日程を追加
-              </Button>
-            )}
           </div>
 
           {!readOnly && selectedDay && (

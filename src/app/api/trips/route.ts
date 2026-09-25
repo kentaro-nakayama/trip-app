@@ -41,18 +41,15 @@ const createTripSchema = z
   .object({
     name: z.string().trim().min(1).max(200),
     description: z.string().trim().max(2000).optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    startDate: z.string().min(1, "開始日を入力してください"),
+    endDate: z.string().min(1, "終了日を入力してください"),
+  })
+  .refine((data) => data.endDate >= data.startDate, {
+    message: "終了日は開始日以降にしてください",
+    path: ["endDate"],
   })
   .refine(
-    (data) => !data.startDate || !data.endDate || data.endDate >= data.startDate,
-    { message: "終了日は開始日以降にしてください", path: ["endDate"] },
-  )
-  .refine(
-    (data) =>
-      !data.startDate ||
-      !data.endDate ||
-      dateRange(data.startDate, data.endDate).length <= MAX_TRIP_SPAN_DAYS,
+    (data) => dateRange(data.startDate, data.endDate).length <= MAX_TRIP_SPAN_DAYS,
     { message: `旅行期間は${MAX_TRIP_SPAN_DAYS}日以内にしてください`, path: ["endDate"] },
   );
 
@@ -71,8 +68,8 @@ export async function POST(req: Request) {
     .values({
       name: parsed.data.name,
       description: parsed.data.description ?? null,
-      startDate: parsed.data.startDate ?? null,
-      endDate: parsed.data.endDate ?? null,
+      startDate: parsed.data.startDate,
+      endDate: parsed.data.endDate,
       ownerId: userId,
     })
     .returning();
