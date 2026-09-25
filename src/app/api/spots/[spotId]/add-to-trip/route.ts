@@ -3,8 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { itineraryDays, itineraryItems, savedSpots, spotLists, spots } from "@/db/schema";
-import { getTripRole, hasAtLeastRole } from "@/lib/access";
+import { itineraryDays, itineraryItems, savedSpots, spots } from "@/db/schema";
+import { getSpotListRole, getTripRole, hasAtLeastRole } from "@/lib/access";
 
 const addToTripSchema = z.object({
   tripId: z.string().uuid(),
@@ -35,6 +35,7 @@ export async function POST(
   const [savedSpot] = await db
     .select({
       id: savedSpots.id,
+      spotListId: savedSpots.spotListId,
       name: savedSpots.name,
       address: savedSpots.address,
       lat: savedSpots.lat,
@@ -43,10 +44,12 @@ export async function POST(
       notes: savedSpots.notes,
     })
     .from(savedSpots)
-    .innerJoin(spotLists, eq(savedSpots.spotListId, spotLists.id))
-    .where(and(eq(savedSpots.id, spotId), eq(spotLists.userId, userId)))
+    .where(eq(savedSpots.id, spotId))
     .limit(1);
   if (!savedSpot) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  const spotListRole = await getSpotListRole(savedSpot.spotListId, userId);
+  if (!spotListRole) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   const [day] = await db
     .select({ id: itineraryDays.id })

@@ -52,22 +52,28 @@ const roleLabel: Record<Member["role"], string> = {
   viewer: "閲覧のみ",
 };
 
+type ResourceType = "trips" | "spot-lists";
+
 function MemberRow({
   member,
   isOwner,
-  tripId,
+  resourceType,
+  resourceId,
+  resourceLabel,
 }: {
   member: Member;
   isOwner: boolean;
-  tripId: string;
+  resourceType: ResourceType;
+  resourceId: string;
+  resourceLabel: string;
 }) {
   const queryClient = useQueryClient();
-  const queryKey = ["trip-members", tripId];
+  const queryKey = [`${resourceType}-members`, resourceId];
   const [removeOpen, setRemoveOpen] = useState(false);
 
   const updateRole = useMutation({
     mutationFn: async (role: "editor" | "viewer") => {
-      const res = await fetch(`/api/trips/${tripId}/members/${member.id}`, {
+      const res = await fetch(`/api/${resourceType}/${resourceId}/members/${member.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),
@@ -83,7 +89,7 @@ function MemberRow({
 
   const removeMember = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/trips/${tripId}/members/${member.id}`, {
+      const res = await fetch(`/api/${resourceType}/${resourceId}/members/${member.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(await extractErrorMessage(res, "削除に失敗しました"));
@@ -142,7 +148,7 @@ function MemberRow({
               <AlertDialogHeader>
                 <AlertDialogTitle>「{member.name}」を削除しますか？</AlertDialogTitle>
                 <AlertDialogDescription>
-                  この旅行のメンバーから削除します。再度参加するには招待リンクが必要です。
+                  この{resourceLabel}のメンバーから削除します。再度参加するには招待リンクが必要です。
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -167,21 +173,26 @@ function MemberRow({
 }
 
 export function MembersDialog({
-  tripId,
+  resourceType,
+  resourceId,
+  resourceLabel = "旅行",
   myRole,
 }: {
-  tripId: string;
+  resourceType?: ResourceType;
+  resourceId: string;
+  resourceLabel?: string;
   myRole: "owner" | "editor" | "viewer";
 }) {
+  const type: ResourceType = resourceType ?? "trips";
   const [open, setOpen] = useState(false);
   const [inviteRole, setInviteRole] = useState<"editor" | "viewer">("editor");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const isOwner = myRole === "owner";
 
   const { data: members, isLoading } = useQuery({
-    queryKey: ["trip-members", tripId],
+    queryKey: [`${type}-members`, resourceId],
     queryFn: async (): Promise<Member[]> => {
-      const res = await fetch(`/api/trips/${tripId}/members`);
+      const res = await fetch(`/api/${type}/${resourceId}/members`);
       if (!res.ok) throw new Error("メンバーの取得に失敗しました");
       return res.json();
     },
@@ -190,7 +201,7 @@ export function MembersDialog({
 
   const createInvite = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/trips/${tripId}/invites`, {
+      const res = await fetch(`/api/${type}/${resourceId}/invites`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: inviteRole }),
@@ -229,7 +240,14 @@ export function MembersDialog({
             </p>
           )}
           {members?.map((member) => (
-            <MemberRow key={member.id} member={member} isOwner={isOwner} tripId={tripId} />
+            <MemberRow
+              key={member.id}
+              member={member}
+              isOwner={isOwner}
+              resourceType={type}
+              resourceId={resourceId}
+              resourceLabel={resourceLabel}
+            />
           ))}
         </div>
 

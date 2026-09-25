@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { MapPinned } from "lucide-react";
 import { getDb } from "@/db";
-import { savedSpots, spotLists } from "@/db/schema";
+import { savedSpots, spotListMembers, spotLists } from "@/db/schema";
+import { resolveUsers } from "@/lib/clerk-users";
 import { CreateSpotListDialog } from "@/components/spots/create-spot-list-dialog";
 import { SpotListCard } from "@/components/spots/spot-list-card";
 
@@ -16,13 +17,33 @@ export default async function SpotsPage() {
       id: spotLists.id,
       name: spotLists.name,
       description: spotLists.description,
-      spotCount: sql<number>`count(${savedSpots.id})`.mapWith(Number),
+      role: spotListMembers.role,
+      spotCount: sql<number>`count(distinct ${savedSpots.id})`.mapWith(Number),
     })
-    .from(spotLists)
+    .from(spotListMembers)
+    .innerJoin(spotLists, eq(spotListMembers.spotListId, spotLists.id))
     .leftJoin(savedSpots, eq(savedSpots.spotListId, spotLists.id))
-    .where(eq(spotLists.userId, userId))
-    .groupBy(spotLists.id)
+    .where(eq(spotListMembers.userId, userId))
+    .groupBy(spotLists.id, spotListMembers.role)
     .orderBy(desc(spotLists.createdAt));
+
+  const spotListIds = rows.map((row) => row.id);
+  const memberRows = spotListIds.length
+    ? await db
+        .select({ spotListId: spotListMembers.spotListId, userId: spotListMembers.userId })
+        .from(spotListMembers)
+        .where(inArray(spotListMembers.spotListId, spotListIds))
+    : [];
+
+  const resolvedUsers = await resolveUsers(memberRows.map((row) => row.userId));
+  const membersBySpotList = new Map<string, { id: string; name: string; imageUrl: string }[]>();
+  for (const row of memberRows) {
+    const info = resolvedUsers.get(row.userId);
+    if (!info) continue;
+    const list = membersBySpotList.get(row.spotListId) ?? [];
+    list.push({ id: row.userId, name: info.name, imageUrl: info.imageUrl });
+    membersBySpotList.set(row.spotListId, list);
+  }
 
   return (
     <>
@@ -55,7 +76,10 @@ export default async function SpotsPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
           {rows.map((spotList) => (
-            <SpotListCard key={spotList.id} spotList={spotList} />
+            <SpotListCard
+              key={spotList.id}
+              spotList={{ ...spotList, members: membersBySpotList.get(spotList.id) ?? [] }}
+            />
           ))}
         </div>
       )}

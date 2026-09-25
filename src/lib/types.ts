@@ -70,6 +70,12 @@ export type SavedSpot = {
   createdAt: string;
 };
 
+export type SpotListMember = {
+  id: string;
+  userId: string;
+  role: "owner" | "editor" | "viewer";
+};
+
 export type SpotListSummary = {
   id: string;
   name: string;
@@ -81,5 +87,8 @@ export type SpotListDetail = {
   id: string;
   name: string;
   description: string | null;
+  ownerId: string;
+  myRole: "owner" | "editor" | "viewer";
+  members: SpotListMember[];
   spots: SavedSpot[];
 };

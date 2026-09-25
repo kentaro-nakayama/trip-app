@@ -23,11 +23,13 @@ import { AddToTripDialog } from "./add-to-trip-dialog";
 export function SpotListItem({
   spot,
   order,
+  readOnly = false,
   onRemove,
   onUpdateNotes,
 }: {
   spot: SavedSpot;
   order: number;
+  readOnly?: boolean;
   onRemove: () => void;
   onUpdateNotes: (notes: string) => void;
 }) {
@@ -75,55 +77,65 @@ export function SpotListItem({
             </button>
           )}
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className={cn("mt-0.5 h-7 w-7 shrink-0", spot.notes && "text-indigo-600 dark:text-indigo-400")}
-          onClick={() => (isEditingNotes ? setIsEditingNotes(false) : startEditing())}
-        >
-          <StickyNote className="h-4 w-4" />
-        </Button>
-        <AlertDialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
-          <AlertDialogTrigger
-            render={<Button type="button" variant="ghost" size="icon" className="mt-0.5 h-7 w-7 shrink-0" />}
+        {!readOnly && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={cn("mt-0.5 h-7 w-7 shrink-0", spot.notes && "text-indigo-600 dark:text-indigo-400")}
+            onClick={() => (isEditingNotes ? setIsEditingNotes(false) : startEditing())}
           >
-            <X className="h-4 w-4" />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>「{spot.name}」を削除しますか？</AlertDialogTitle>
-              <AlertDialogDescription>
-                このリストからスポットを削除します。この操作は取り消せません。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>キャンセル</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  onRemove();
-                  setConfirmRemoveOpen(false);
-                }}
-                className="bg-destructive text-white hover:bg-destructive/90"
-              >
-                削除する
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <StickyNote className="h-4 w-4" />
+          </Button>
+        )}
+        {!readOnly && (
+          <AlertDialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
+            <AlertDialogTrigger
+              render={<Button type="button" variant="ghost" size="icon" className="mt-0.5 h-7 w-7 shrink-0" />}
+            >
+              <X className="h-4 w-4" />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>「{spot.name}」を削除しますか？</AlertDialogTitle>
+                <AlertDialogDescription>
+                  このリストからスポットを削除します。この操作は取り消せません。
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    onRemove();
+                    setConfirmRemoveOpen(false);
+                  }}
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                >
+                  削除する
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       {!isEditingNotes && spot.notes && (
-        <button
-          type="button"
-          onClick={startEditing}
-          className="cursor-text rounded-md bg-zinc-50 px-2 py-1.5 text-left text-xs whitespace-pre-wrap text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-        >
-          {spot.notes}
-        </button>
+        readOnly ? (
+          <p className="rounded-md bg-zinc-50 px-2 py-1.5 text-left text-xs whitespace-pre-wrap text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+            {spot.notes}
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={startEditing}
+            className="cursor-text rounded-md bg-zinc-50 px-2 py-1.5 text-left text-xs whitespace-pre-wrap text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+          >
+            {spot.notes}
+          </button>
+        )
       )}
 
-      {isEditingNotes && (
+      {!readOnly && isEditingNotes && (
         <div className="flex flex-col gap-1.5">
           <Textarea
             value={notesDraft}

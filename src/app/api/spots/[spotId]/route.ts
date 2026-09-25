@@ -1,14 +1,32 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { savedSpots, spotLists } from "@/db/schema";
+import { savedSpots } from "@/db/schema";
+import { getSpotListRole, hasAtLeastRole } from "@/lib/access";
 
 const updateSpotSchema = z.object({
   name: z.string().trim().min(1).max(200),
   notes: z.string().trim().max(2000).nullable().optional(),
 });
+
+async function requireEditAccess(spotId: string, userId: string) {
+  const db = getDb();
+  const [spot] = await db
+    .select({ id: savedSpots.id, spotListId: savedSpots.spotListId })
+    .from(savedSpots)
+    .where(eq(savedSpots.id, spotId))
+    .limit(1);
+  if (!spot) return { error: NextResponse.json({ error: "not_found" }, { status: 404 }) };
+
+  const role = await getSpotListRole(spot.spotListId, userId);
+  if (!hasAtLeastRole(role, "editor")) {
+    return { error: NextResponse.json({ error: "forbidden" }, { status: 403 }) };
+  }
+
+  return { db, spot };
+}
 
 export async function PATCH(
   req: Request,
@@ -23,16 +41,10 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const db = getDb();
-  const [owned] = await db
-    .select({ id: savedSpots.id })
-    .from(savedSpots)
-    .innerJoin(spotLists, eq(savedSpots.spotListId, spotLists.id))
-    .where(and(eq(savedSpots.id, spotId), eq(spotLists.userId, userId)))
-    .limit(1);
-  if (!owned) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const result = await requireEditAccess(spotId, userId);
+  if (result.error) return result.error;
 
-  const [spot] = await db
+  const [spot] = await result.db
     .update(savedSpots)
     .set({
       name: parsed.data.name,
@@ -53,16 +65,10 @@ export async function DELETE(
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { spotId } = await params;
-  const db = getDb();
-  const [owned] = await db
-    .select({ id: savedSpots.id })
-    .from(savedSpots)
-    .innerJoin(spotLists, eq(savedSpots.spotListId, spotLists.id))
-    .where(and(eq(savedSpots.id, spotId), eq(spotLists.userId, userId)))
-    .limit(1);
-  if (!owned) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const result = await requireEditAccess(spotId, userId);
+  if (result.error) return result.error;
 
-  await db.delete(savedSpots).where(eq(savedSpots.id, spotId));
+  await result.db.delete(savedSpots).where(eq(savedSpots.id, spotId));
 
   return NextResponse.json({ ok: true });
 }

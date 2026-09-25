@@ -34,12 +34,19 @@ import { CARD_GLOW } from "@/lib/card-glow";
 import { cn, extractErrorMessage } from "@/lib/utils";
 import type { SpotListSummary } from "@/lib/types";
 
-export function SpotListCard({ spotList }: { spotList: SpotListSummary }) {
+export type SpotListCardData = SpotListSummary & {
+  role: "owner" | "editor" | "viewer";
+  members: { id: string; name: string; imageUrl: string }[];
+};
+
+export function SpotListCard({ spotList }: { spotList: SpotListCardData }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [name, setName] = useState(spotList.name);
   const [description, setDescription] = useState(spotList.description ?? "");
+
+  const canEdit = spotList.role === "owner" || spotList.role === "editor";
 
   const editMutation = useMutation({
     mutationFn: async () => {
@@ -88,11 +95,31 @@ export function SpotListCard({ spotList }: { spotList: SpotListSummary }) {
               <MapPin className="h-3.5 w-3.5" />
               {spotList.spotCount}件のスポット
             </span>
+            {spotList.members.length > 0 && (
+              <div className="flex -space-x-2">
+                {spotList.members.slice(0, 4).map((member) => (
+                  // eslint-disable-next-line @next/next/no-img-element -- external Clerk avatar URL
+                  <img
+                    key={member.id}
+                    src={member.imageUrl}
+                    alt={member.name}
+                    title={member.name}
+                    className="h-6 w-6 rounded-full border-2 border-white object-cover dark:border-zinc-900"
+                  />
+                ))}
+                {spotList.members.length > 4 && (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-zinc-200 text-[10px] font-medium text-zinc-600 dark:border-zinc-900 dark:bg-zinc-700 dark:text-zinc-300">
+                    +{spotList.members.length - 4}
+                  </span>
+                )}
+              </div>
+            )}
           </CardFooter>
         </Card>
       </Link>
 
       <div className="absolute top-2 right-2 flex items-center gap-0.5">
+        {canEdit && (
         <Dialog
           open={editOpen}
           onOpenChange={(next) => {
@@ -150,7 +177,9 @@ export function SpotListCard({ spotList }: { spotList: SpotListSummary }) {
             </form>
           </DialogContent>
         </Dialog>
+        )}
 
+        {spotList.role === "owner" && (
         <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
           <AlertDialogTrigger
             render={
@@ -183,6 +212,7 @@ export function SpotListCard({ spotList }: { spotList: SpotListSummary }) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        )}
       </div>
     </div>
   );

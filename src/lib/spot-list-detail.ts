@@ -1,20 +1,27 @@
 import "server-only";
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { savedSpots, spotLists } from "@/db/schema";
+import { savedSpots, spotListMembers, spotLists } from "@/db/schema";
 import type { SpotListDetail } from "./types";
+import type { TripRole } from "./access";
 
 export async function loadSpotListDetail(
   spotListId: string,
-  userId: string,
+  role: TripRole,
 ): Promise<SpotListDetail | null> {
   const db = getDb();
+
   const [spotList] = await db
     .select()
     .from(spotLists)
-    .where(and(eq(spotLists.id, spotListId), eq(spotLists.userId, userId)))
+    .where(eq(spotLists.id, spotListId))
     .limit(1);
   if (!spotList) return null;
+
+  const members = await db
+    .select({ id: spotListMembers.id, userId: spotListMembers.userId, role: spotListMembers.role })
+    .from(spotListMembers)
+    .where(eq(spotListMembers.spotListId, spotListId));
 
   const spots = await db
     .select()
@@ -26,6 +33,9 @@ export async function loadSpotListDetail(
     id: spotList.id,
     name: spotList.name,
     description: spotList.description,
+    ownerId: spotList.userId,
+    myRole: role,
+    members,
     spots: spots.map((s) => ({
       id: s.id,
       spotListId: s.spotListId,

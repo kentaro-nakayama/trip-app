@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, extractErrorMessage } from "@/lib/utils";
 import { CustomSpotDialog, type AddressSpotSelection } from "@/components/trip/custom-spot-dialog";
+import { MembersDialog } from "@/components/trip/members-dialog";
 import { SpotSearch, type PlaceSelection } from "@/components/trip/spot-search";
 import { TripMap, type MapPin as MapPinType } from "@/components/trip/trip-map";
 import { SpotListItem } from "./spot-list-item";
@@ -49,6 +50,7 @@ export function SpotListWorkspace({
     initialData: initial,
   });
 
+  const readOnly = data.myRole === "viewer";
   const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const [clickToAdd, setClickToAdd] = useState(false);
   const [pendingLatLng, setPendingLatLng] = useState<{
@@ -179,6 +181,12 @@ export function SpotListWorkspace({
           </Button>
           <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
         </div>
+        <MembersDialog
+          resourceType="spot-lists"
+          resourceId={spotListId}
+          resourceLabel="スポットリスト"
+          myRole={data.myRole}
+        />
       </div>
 
       <div className="grid shrink-0 grid-cols-2 gap-1 border-b p-2 md:hidden">
@@ -209,44 +217,54 @@ export function SpotListWorkspace({
             mobileView === "list" ? "flex" : "hidden",
           )}
         >
-          <div className="hidden items-start gap-2 md:flex">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="-ml-1 h-8 w-8 shrink-0"
-              nativeButton={false}
-              render={<Link href="/spots" />}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+          <div className="hidden items-start justify-between gap-2 md:flex">
+            <div className="flex items-start gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="-ml-1 h-8 w-8 shrink-0"
+                nativeButton={false}
+                render={<Link href="/spots" />}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+            </div>
+            <MembersDialog
+              resourceType="spot-lists"
+              resourceId={spotListId}
+              resourceLabel="スポットリスト"
+              myRole={data.myRole}
+            />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <SpotSearch onSelect={handlePlaceSelect} />
-            <CustomSpotDialog
-              hasPreviousItem={false}
-              onChooseMapClick={() => {
-                setClickToAdd(true);
-                setMobileView("map");
-              }}
-              onAddressSelect={handleAddressSelect}
-            />
-            {clickToAdd && (
-              <div className="flex items-center justify-between gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
-                <span>地図をクリックしてスポットを追加してください</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300"
-                  onClick={() => setClickToAdd(false)}
-                >
-                  キャンセル
-                </Button>
-              </div>
-            )}
-          </div>
+          {!readOnly && (
+            <div className="flex flex-col gap-2">
+              <SpotSearch onSelect={handlePlaceSelect} />
+              <CustomSpotDialog
+                hasPreviousItem={false}
+                onChooseMapClick={() => {
+                  setClickToAdd(true);
+                  setMobileView("map");
+                }}
+                onAddressSelect={handleAddressSelect}
+              />
+              {clickToAdd && (
+                <div className="flex items-center justify-between gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
+                  <span>地図をクリックしてスポットを追加してください</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300"
+                    onClick={() => setClickToAdd(false)}
+                  >
+                    キャンセル
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {data.spots.length === 0 ? (
             <p className="rounded-md border border-dashed p-4 text-center text-sm text-zinc-500">
@@ -259,6 +277,7 @@ export function SpotListWorkspace({
                   key={spot.id}
                   spot={spot}
                   order={index}
+                  readOnly={readOnly}
                   onRemove={() => removeSpot.mutate(spot.id)}
                   onUpdateNotes={(notes) => updateSpotNotes.mutate({ spotId: spot.id, notes })}
                 />

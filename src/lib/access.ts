@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { tripMembers } from "@/db/schema";
+import { spotListMembers, tripMembers } from "@/db/schema";
 
 export type TripRole = "owner" | "editor" | "viewer";
 
@@ -15,6 +15,21 @@ export async function getTripRole(
     .select({ role: tripMembers.role })
     .from(tripMembers)
     .where(and(eq(tripMembers.tripId, tripId), eq(tripMembers.userId, userId)))
+    .limit(1);
+  return member?.role ?? null;
+}
+
+export async function getSpotListRole(
+  spotListId: string,
+  userId: string,
+): Promise<TripRole | null> {
+  const db = getDb();
+  const [member] = await db
+    .select({ role: spotListMembers.role })
+    .from(spotListMembers)
+    .where(
+      and(eq(spotListMembers.spotListId, spotListId), eq(spotListMembers.userId, userId)),
+    )
     .limit(1);
   return member?.role ?? null;
 }

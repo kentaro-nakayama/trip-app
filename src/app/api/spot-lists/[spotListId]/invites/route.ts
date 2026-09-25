@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { savedSpots } from "@/db/schema";
+import { spotListInvites } from "@/db/schema";
 import { getSpotListRole, hasAtLeastRole } from "@/lib/access";
 
-const createSpotSchema = z.object({
-  name: z.string().trim().min(1).max(200),
-  address: z.string().trim().max(500).optional(),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  googlePlaceId: z.string().max(300).optional(),
-  notes: z.string().trim().max(2000).optional(),
+const createInviteSchema = z.object({
+  role: z.enum(["editor", "viewer"]).default("editor"),
 });
+
+const INVITE_TTL_DAYS = 7;
 
 export async function POST(
   req: Request,
@@ -27,24 +25,22 @@ export async function POST(
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const parsed = createSpotSchema.safeParse(await req.json());
+  const parsed = createInviteSchema.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
   const db = getDb();
-  const [spot] = await db
-    .insert(savedSpots)
+  const [invite] = await db
+    .insert(spotListInvites)
     .values({
       spotListId,
-      name: parsed.data.name,
-      address: parsed.data.address ?? null,
-      lat: parsed.data.lat,
-      lng: parsed.data.lng,
-      googlePlaceId: parsed.data.googlePlaceId ?? null,
-      notes: parsed.data.notes ?? null,
+      role: parsed.data.role,
+      invitedByUserId: userId,
+      token: randomBytes(24).toString("hex"),
+      expiresAt: new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000),
     })
     .returning();
 
-  return NextResponse.json(spot, { status: 201 });
+  return NextResponse.json(invite, { status: 201 });
 }

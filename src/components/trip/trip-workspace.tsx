@@ -419,7 +419,7 @@ export function TripWorkspace({
             )}
           </div>
         </div>
-        <MembersDialog tripId={tripId} myRole={data.myRole} />
+        <MembersDialog resourceType="trips" resourceId={tripId} resourceLabel="旅行" myRole={data.myRole} />
       </div>
 
       <div className="grid shrink-0 grid-cols-2 gap-1 border-b p-2 md:hidden">
@@ -470,7 +470,7 @@ export function TripWorkspace({
                 )}
               </div>
             </div>
-            <MembersDialog tripId={tripId} myRole={data.myRole} />
+            <MembersDialog resourceType="trips" resourceId={tripId} resourceLabel="旅行" myRole={data.myRole} />
           </div>
 
           <div className="flex flex-wrap gap-2">

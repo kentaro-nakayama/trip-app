@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { getSpotListRole } from "@/lib/access";
 import { loadSpotListDetail } from "@/lib/spot-list-detail";
 import { SpotListWorkspace } from "@/components/spots/spot-list-workspace";
 
@@ -12,7 +13,10 @@ export default async function SpotListDetailPage({
   if (!userId) return null;
 
   const { spotListId } = await params;
-  const initial = await loadSpotListDetail(spotListId, userId);
+  const role = await getSpotListRole(spotListId, userId);
+  if (!role) notFound();
+
+  const initial = await loadSpotListDetail(spotListId, role);
   if (!initial) notFound();
 
   return (

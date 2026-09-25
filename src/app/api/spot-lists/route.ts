@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { savedSpots, spotLists } from "@/db/schema";
+import { savedSpots, spotListMembers, spotLists } from "@/db/schema";
 import type { SpotListSummary } from "@/lib/types";
 
 export async function GET() {
@@ -16,11 +16,12 @@ export async function GET() {
       id: spotLists.id,
       name: spotLists.name,
       description: spotLists.description,
-      spotCount: sql<number>`count(${savedSpots.id})`.mapWith(Number),
+      spotCount: sql<number>`count(distinct ${savedSpots.id})`.mapWith(Number),
     })
-    .from(spotLists)
+    .from(spotListMembers)
+    .innerJoin(spotLists, eq(spotListMembers.spotListId, spotLists.id))
     .leftJoin(savedSpots, eq(savedSpots.spotListId, spotLists.id))
-    .where(eq(spotLists.userId, userId))
+    .where(eq(spotListMembers.userId, userId))
     .groupBy(spotLists.id)
     .orderBy(desc(spotLists.createdAt));
 
@@ -51,6 +52,12 @@ export async function POST(req: Request) {
       description: parsed.data.description ?? null,
     })
     .returning();
+
+  await db.insert(spotListMembers).values({
+    spotListId: spotList.id,
+    userId,
+    role: "owner",
+  });
 
   return NextResponse.json(spotList, { status: 201 });
 }

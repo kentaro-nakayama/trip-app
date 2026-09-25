@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { spotLists } from "@/db/schema";
+import { getSpotListRole, hasAtLeastRole } from "@/lib/access";
 import { loadSpotListDetail } from "@/lib/spot-list-detail";
 
 export async function GET(
@@ -14,7 +15,10 @@ export async function GET(
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { spotListId } = await params;
-  const detail = await loadSpotListDetail(spotListId, userId);
+  const role = await getSpotListRole(spotListId, userId);
+  if (!role) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  const detail = await loadSpotListDetail(spotListId, role);
   if (!detail) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   return NextResponse.json(detail);
@@ -33,6 +37,11 @@ export async function PATCH(
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { spotListId } = await params;
+  const role = await getSpotListRole(spotListId, userId);
+  if (!hasAtLeastRole(role, "editor")) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
   const parsed = updateSpotListSchema.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -46,7 +55,7 @@ export async function PATCH(
       description: parsed.data.description ?? null,
       updatedAt: new Date(),
     })
-    .where(and(eq(spotLists.id, spotListId), eq(spotLists.userId, userId)))
+    .where(eq(spotLists.id, spotListId))
     .returning();
 
   if (!spotList) return NextResponse.json({ error: "not_found" }, { status: 404 });
@@ -62,13 +71,13 @@ export async function DELETE(
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { spotListId } = await params;
-  const db = getDb();
-  const [spotList] = await db
-    .delete(spotLists)
-    .where(and(eq(spotLists.id, spotListId), eq(spotLists.userId, userId)))
-    .returning({ id: spotLists.id });
+  const role = await getSpotListRole(spotListId, userId);
+  if (role !== "owner") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
 
-  if (!spotList) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  const db = getDb();
+  await db.delete(spotLists).where(eq(spotLists.id, spotListId));
 
   return NextResponse.json({ ok: true });
 }

@@ -114,6 +114,41 @@ export const spotLists = pgTable("spot_lists", {
     .defaultNow(),
 });
 
+export const spotListMembers = pgTable(
+  "spot_list_members",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    spotListId: uuid("spot_list_id")
+      .notNull()
+      .references(() => spotLists.id, { onDelete: "cascade" }),
+    // Clerk user id
+    userId: text("user_id").notNull(),
+    role: tripMemberRoleEnum("role").notNull().default("editor"),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("spot_list_members_spotlist_user_idx").on(table.spotListId, table.userId),
+  ],
+);
+
+export const spotListInvites = pgTable("spot_list_invites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  spotListId: uuid("spot_list_id")
+    .notNull()
+    .references(() => spotLists.id, { onDelete: "cascade" }),
+  role: tripMemberRoleEnum("role").notNull().default("editor"),
+  // Clerk user id of the inviter
+  invitedByUserId: text("invited_by_user_id").notNull(),
+  token: text("token").notNull().unique(),
+  status: inviteStatusEnum("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 // A bookmarked spot within a spot list — the spot-list equivalent of an
 // itinerary item. When one is added to a trip's itinerary, its data is
 // copied into a trip-scoped `spots` row (see /api/spots/[spotId]/add-to-trip)
@@ -199,10 +234,20 @@ export const spotsRelations = relations(spots, ({ one, many }) => ({
 
 export const spotListsRelations = relations(spotLists, ({ many }) => ({
   spots: many(savedSpots),
+  members: many(spotListMembers),
+  invites: many(spotListInvites),
 }));
 
 export const savedSpotsRelations = relations(savedSpots, ({ one }) => ({
   spotList: one(spotLists, { fields: [savedSpots.spotListId], references: [spotLists.id] }),
+}));
+
+export const spotListMembersRelations = relations(spotListMembers, ({ one }) => ({
+  spotList: one(spotLists, { fields: [spotListMembers.spotListId], references: [spotLists.id] }),
+}));
+
+export const spotListInvitesRelations = relations(spotListInvites, ({ one }) => ({
+  spotList: one(spotLists, { fields: [spotListInvites.spotListId], references: [spotLists.id] }),
 }));
 
 export const itineraryDaysRelations = relations(itineraryDays, ({ one, many }) => ({
