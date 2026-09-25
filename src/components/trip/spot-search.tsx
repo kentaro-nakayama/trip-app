@@ -56,7 +56,7 @@ export function SpotSearch({
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Googleマップでスポットを検索"
+          placeholder="スポット名や住所で検索して追加"
           className="pl-8"
         />
       </div>
