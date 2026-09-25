@@ -275,8 +275,8 @@ export function SortableItineraryItem({
 
       {isEditingSchedule && (
         <div className="flex flex-col gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
-          <div className="flex gap-2">
-            <div className="min-w-0 flex-1">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
               <Label htmlFor={`schedule-start-${item.id}`} className="text-xs">
                 開始時刻
               </Label>
@@ -293,7 +293,7 @@ export function SortableItineraryItem({
                 </p>
               )}
             </div>
-            <div className="min-w-0 flex-1">
+            <div>
               <Label htmlFor={`schedule-duration-${item.id}`} className="text-xs">
                 所要時間（分）
               </Label>
