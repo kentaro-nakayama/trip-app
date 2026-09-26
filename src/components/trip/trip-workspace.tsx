@@ -398,7 +398,7 @@ export function TripWorkspace({
   );
 
   const content = (
-    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden md:flex-row">
       <div className="flex items-start justify-between gap-2 border-b p-4 md:hidden">
         <div className="flex items-start gap-2">
           <Button
@@ -524,7 +524,7 @@ export function TripWorkspace({
             )}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <div className="scrollbar-visible min-h-0 flex-1 overflow-y-auto p-4">
             {selectedDay ? (
               <DayColumn
                 day={selectedDay}

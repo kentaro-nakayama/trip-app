@@ -11,6 +11,27 @@
   }
 }
 
+/* Always-visible scrollbar for internally-scrolling panels (e.g. the
+   itinerary list), so it's obvious the panel scrolls independently of the
+   page, even on touch devices that otherwise auto-hide overlay scrollbars. */
+.scrollbar-visible {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+.scrollbar-visible::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
 /* Compass-needle loading indicator, shown during page transitions. */
 @keyframes spinNeedle {
   0% {
