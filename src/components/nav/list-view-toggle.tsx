@@ -1,5 +1,6 @@
 "use client";
 
+import { CREATE_BUTTON_GLOW } from "@/lib/card-glow";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -29,7 +30,7 @@ export function ListViewToggle({
             className={cn(
               "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed",
               active
-                ? "bg-[rgb(76,71,205)] text-white shadow-sm"
+                ? cn("bg-[rgb(76,71,205)] text-white", CREATE_BUTTON_GLOW)
                 : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200",
             )}
           >

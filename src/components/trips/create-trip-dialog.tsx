@@ -19,8 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ParticleBurstButton } from "@/components/ui/particle-burst-button";
-import { CREATE_BUTTON_GLOW } from "@/lib/card-glow";
-import { cn, extractErrorMessage } from "@/lib/utils";
+import { extractErrorMessage } from "@/lib/utils";
 import type { TripSummary } from "@/lib/types";
 
 export function CreateTripDialog() {
@@ -62,16 +61,7 @@ export function CreateTripDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button
-            className={cn(
-              "bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)]",
-              CREATE_BUTTON_GLOW,
-            )}
-          />
-        }
-      >
+      <DialogTrigger render={<Button />}>
         新しい旅行を作成
       </DialogTrigger>
       <DialogContent>
