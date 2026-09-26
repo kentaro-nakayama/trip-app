@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarPlus, Loader2 } from "lucide-react";
+import { Loader2, MapPinPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -100,9 +100,19 @@ export function AddToTripDialog({ spotId, spotName }: { spotId: string; spotName
         }
       }}
     >
-      <DialogTrigger render={<Button type="button" variant="outline" size="sm" />}>
-        <CalendarPlus className="h-4 w-4" />
-        旅行に追加する
+      <DialogTrigger
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="mt-0.5 h-7 w-7 shrink-0"
+            aria-label="旅行に追加する"
+            title="旅行に追加する"
+          />
+        }
+      >
+        <MapPinPlus className="h-4 w-4" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

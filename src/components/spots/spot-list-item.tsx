@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { HintBubble } from "@/components/onboarding/hint-bubble";
 import { cn } from "@/lib/utils";
 import type { SavedSpot } from "@/lib/types";
 import { AddToTripDialog } from "./add-to-trip-dialog";
@@ -77,6 +78,18 @@ export function SpotListItem({
             </button>
           )}
         </div>
+        {!readOnly && (
+          order === 0 ? (
+            <HintBubble
+              id="add-to-trip"
+              message="このスポットを旅行の行程に追加できます。追加したい旅行と日付を選んでください。"
+            >
+              <AddToTripDialog spotId={spot.id} spotName={spot.name} />
+            </HintBubble>
+          ) : (
+            <AddToTripDialog spotId={spot.id} spotName={spot.name} />
+          )
+        )}
         {!readOnly && (
           <Button
             type="button"
@@ -154,8 +167,6 @@ export function SpotListItem({
           </div>
         </div>
       )}
-
-      <AddToTripDialog spotId={spot.id} spotName={spot.name} />
     </li>
   );
 }
