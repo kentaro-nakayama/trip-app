@@ -104,6 +104,8 @@ export function ScheduleConfirmDialog({
               value={startTime}
               onChange={(e) => setManualStartTime(e.target.value)}
               autoFocus
+              className="w-[140px] max-w-full"
+              style={{ width: 140 }}
             />
             {suggested && manualStartTime === null && (
               <p className="text-xs text-zinc-500">
