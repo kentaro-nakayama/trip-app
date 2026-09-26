@@ -72,10 +72,13 @@ export function TripMap({
   pins,
   onMapClick,
   onPoiClick,
+  showRoute = true,
 }: {
   pins: MapPin[];
   onMapClick?: (lat: number, lng: number, address: string | null) => void;
   onPoiClick?: (place: PlaceSelection) => void;
+  /** Whether to draw the connecting line + direction arrows between pins. */
+  showRoute?: boolean;
 }) {
   const placesLib = useMapsLibrary("places");
   const geocodingLib = useMapsLibrary("geocoding");
@@ -140,7 +143,7 @@ export function TripMap({
         }
       }}
     >
-      {pins.length > 1 && (
+      {showRoute && pins.length > 1 && (
         <>
           <Polyline
             path={pins.map((pin) => ({ lat: pin.lat, lng: pin.lng }))}

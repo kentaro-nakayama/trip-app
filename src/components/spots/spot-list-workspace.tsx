@@ -295,6 +295,7 @@ export function SpotListWorkspace({
                 : undefined
             }
             onPoiClick={handlePlaceSelect}
+            showRoute={false}
           />
         </main>
       </div>
