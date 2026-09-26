@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ParticleBurstButton } from "@/components/ui/particle-burst-button";
-import { CARD_GLOW } from "@/lib/card-glow";
+import { CREATE_BUTTON_GLOW } from "@/lib/card-glow";
 import { cn, extractErrorMessage } from "@/lib/utils";
 import type { SpotListSummary } from "@/lib/types";
 
@@ -56,8 +56,8 @@ export function CreateSpotListDialog() {
         render={
           <Button
             className={cn(
-              "border border-zinc-400 bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)] dark:border-zinc-500",
-              CARD_GLOW,
+              "bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)]",
+              CREATE_BUTTON_GLOW,
             )}
           />
         }
