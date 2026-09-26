@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, extractErrorMessage } from "@/lib/utils";
 import type { TravelMode } from "@/lib/travel-mode";
@@ -524,27 +525,29 @@ export function TripWorkspace({
             )}
           </div>
 
-          <div className="scrollbar-visible min-h-0 flex-1 overflow-y-auto p-4">
-            {selectedDay ? (
-              <DayColumn
-                day={selectedDay}
-                readOnly={readOnly}
-                onReorder={(orderedItemIds) =>
-                  reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
-                }
-                onRemoveItem={(itemId) => removeItem.mutate(itemId)}
-                onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
-                onUpdateSchedule={(itemId, schedule) =>
-                  updateItemSchedule.mutate({ itemId, ...schedule })
-                }
-                onUpdateTravelMode={(itemId, travelMode) =>
-                  updateTravelMode.mutate({ itemId, travelMode })
-                }
-              />
-            ) : (
-              <p className="text-sm text-zinc-500">まだ日程がありません。</p>
-            )}
-          </div>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="p-4">
+              {selectedDay ? (
+                <DayColumn
+                  day={selectedDay}
+                  readOnly={readOnly}
+                  onReorder={(orderedItemIds) =>
+                    reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
+                  }
+                  onRemoveItem={(itemId) => removeItem.mutate(itemId)}
+                  onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
+                  onUpdateSchedule={(itemId, schedule) =>
+                    updateItemSchedule.mutate({ itemId, ...schedule })
+                  }
+                  onUpdateTravelMode={(itemId, travelMode) =>
+                    updateTravelMode.mutate({ itemId, travelMode })
+                  }
+                />
+              ) : (
+                <p className="text-sm text-zinc-500">まだ日程がありません。</p>
+              )}
+            </div>
+          </ScrollArea>
         </aside>
 
         <main className="relative min-h-0 flex-1">

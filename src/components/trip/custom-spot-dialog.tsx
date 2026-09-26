@@ -185,7 +185,7 @@ export function CustomSpotDialog({
                   id="address-spot-address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="例: 広島県広島市中区中島町1-2"
+                  placeholder="例: 東京都千代田区丸の内一丁目9-1"
                   required
                   autoFocus
                 />

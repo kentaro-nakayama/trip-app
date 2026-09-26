@@ -1,5 +1,7 @@
 # TabiPath(旅ぱす)
 
+🌐 **[https://tabipath.app](https://tabipath.app)** で公開中
+
 旅行の日程を管理するWebアプリ。行きたいスポットをGoogleマップなどから検索して保存したり、独自の目的地を設定できる。旅行の行程画面では中央にGoogleマップを表示し、行程で決めた順番にピンを立てる。一緒に行くメンバーを招待して共同編集できる。
 
 ## 主要機能
@@ -20,7 +22,7 @@
 | DB | Neon Postgres（Vercel Marketplace経由で自動プロビジョニング）+ Drizzle ORM |
 | 認証 | Clerk（Vercel Marketplace） |
 | データ取得/キャッシュ | TanStack Query |
-| ホスティング | Vercel |
+| ホスティング | Vercel（デプロイ先: [tabipath.app](https://tabipath.app)） |
 
 ## セットアップ
 
