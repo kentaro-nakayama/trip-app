@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, type ReactNode } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ListViewToggle } from "./list-view-toggle";
 import { UserMenu } from "@/components/profile/user-menu";
@@ -28,10 +28,26 @@ export function ListsChrome({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  // usePathname() only updates once the transition below actually commits,
+  // so relying on it alone to highlight the active tab means the tab stays
+  // on the old selection for the whole (potentially slow) page load. This
+  // local copy flips synchronously the instant a tab is clicked — before
+  // the transition even starts. Resetting it during render (rather than in
+  // an effect) whenever the real pathname changes keeps it in sync for any
+  // navigation that doesn't go through `navigate` below (back/forward,
+  // direct links) without an extra render pass.
+  const [activeTab, setActiveTab] = useState(pathname);
+  const [trackedPathname, setTrackedPathname] = useState(pathname);
+  if (pathname !== trackedPathname) {
+    setTrackedPathname(pathname);
+    setActiveTab(pathname);
+  }
+
   if (!LIST_PATHS.has(pathname)) return <>{children}</>;
 
   function navigate(href: string) {
     if (href === pathname || isPending) return;
+    setActiveTab(href);
     startTransition(() => {
       router.push(href);
     });
@@ -45,7 +61,7 @@ export function ListsChrome({ children }: { children: ReactNode }) {
       />
       <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-12 sm:py-14">
         <div className="flex items-center justify-between gap-4">
-          <ListViewToggle pathname={pathname} pending={isPending} onNavigate={navigate} />
+          <ListViewToggle pathname={activeTab} pending={isPending} onNavigate={navigate} />
           <UserMenu />
         </div>
         <div className="flex flex-1 flex-col gap-8">
