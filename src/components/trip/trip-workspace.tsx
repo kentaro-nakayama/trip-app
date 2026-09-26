@@ -446,101 +446,105 @@ export function TripWorkspace({
       <div className="relative flex min-h-0 flex-1 md:flex-row">
         <aside
           className={cn(
-            "absolute inset-0 z-10 min-h-0 flex-col gap-4 overflow-y-auto bg-background p-4 md:static md:z-auto md:flex md:w-[456px] md:flex-none md:shrink-0 md:border-r",
+            "absolute inset-0 z-10 min-h-0 flex-col overflow-hidden bg-background md:static md:z-auto md:flex md:w-[456px] md:flex-none md:shrink-0 md:border-r",
             mobileView === "list" ? "flex" : "hidden",
           )}
         >
-          <div className="hidden items-start justify-between gap-2 md:flex">
-            <div className="flex items-start gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="-ml-1 h-8 w-8 shrink-0"
-                nativeButton={false}
-                render={<Link href="/trips" />}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
-                {(data.startDate || data.endDate) && (
-                  <p className="text-[15px] text-zinc-500">
-                    {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
-                  </p>
-                )}
-              </div>
-            </div>
-            <MembersDialog resourceType="trips" resourceId={tripId} resourceLabel="旅行" myRole={data.myRole} />
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {data.days.map((day, index) => (
-              <Button
-                key={day.id}
-                size="sm"
-                variant={day.id === selectedDay?.id ? "default" : "outline"}
-                className={cn(
-                  day.id === selectedDay?.id &&
-                    "bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)]",
-                )}
-                onClick={() => setSelectedDayId(day.id)}
-              >
-                {formatDayLabel(day, index)}
-              </Button>
-            ))}
-          </div>
-
-          {!readOnly && selectedDay && (
-            <HintBubble
-              id="add-spot"
-              message="Googleマップでスポットを検索するか、自分でスポットを追加して行程に加えられます。"
-              className="flex flex-col gap-2"
-            >
-              <SpotSearch onSelect={handlePlaceSelect} />
-              <CustomSpotDialog
-                hasPreviousItem={hasPreviousItem}
-                onChooseMapClick={() => {
-                  setClickToAdd(true);
-                  setMobileView("map");
-                }}
-                onAddressSelect={handleAddressSelect}
-              />
-              {clickToAdd && (
-                <div className="flex items-center justify-between gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
-                  <span>地図をクリックしてスポットを追加してください</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300"
-                    onClick={() => setClickToAdd(false)}
-                  >
-                    キャンセル
-                  </Button>
+          <div className="flex shrink-0 flex-col gap-4 p-4 pb-0">
+            <div className="hidden items-start justify-between gap-2 md:flex">
+              <div className="flex items-start gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="-ml-1 h-8 w-8 shrink-0"
+                  nativeButton={false}
+                  render={<Link href="/trips" />}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
+                  {(data.startDate || data.endDate) && (
+                    <p className="text-[15px] text-zinc-500">
+                      {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
+                    </p>
+                  )}
                 </div>
-              )}
-            </HintBubble>
-          )}
+              </div>
+              <MembersDialog resourceType="trips" resourceId={tripId} resourceLabel="旅行" myRole={data.myRole} />
+            </div>
 
-          {selectedDay ? (
-            <DayColumn
-              day={selectedDay}
-              readOnly={readOnly}
-              onReorder={(orderedItemIds) =>
-                reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
-              }
-              onRemoveItem={(itemId) => removeItem.mutate(itemId)}
-              onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
-              onUpdateSchedule={(itemId, schedule) =>
-                updateItemSchedule.mutate({ itemId, ...schedule })
-              }
-              onUpdateTravelMode={(itemId, travelMode) =>
-                updateTravelMode.mutate({ itemId, travelMode })
-              }
-            />
-          ) : (
-            <p className="text-sm text-zinc-500">まだ日程がありません。</p>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {data.days.map((day, index) => (
+                <Button
+                  key={day.id}
+                  size="sm"
+                  variant={day.id === selectedDay?.id ? "default" : "outline"}
+                  className={cn(
+                    day.id === selectedDay?.id &&
+                      "bg-[rgb(76,71,205)] hover:bg-[rgb(65,60,174)]",
+                  )}
+                  onClick={() => setSelectedDayId(day.id)}
+                >
+                  {formatDayLabel(day, index)}
+                </Button>
+              ))}
+            </div>
+
+            {!readOnly && selectedDay && (
+              <HintBubble
+                id="add-spot"
+                message="Googleマップでスポットを検索するか、自分でスポットを追加して行程に加えられます。"
+                className="flex flex-col gap-2"
+              >
+                <SpotSearch onSelect={handlePlaceSelect} />
+                <CustomSpotDialog
+                  hasPreviousItem={hasPreviousItem}
+                  onChooseMapClick={() => {
+                    setClickToAdd(true);
+                    setMobileView("map");
+                  }}
+                  onAddressSelect={handleAddressSelect}
+                />
+                {clickToAdd && (
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
+                    <span>地図をクリックしてスポットを追加してください</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-indigo-700 hover:text-indigo-800 dark:text-indigo-300"
+                      onClick={() => setClickToAdd(false)}
+                    >
+                      キャンセル
+                    </Button>
+                  </div>
+                )}
+              </HintBubble>
+            )}
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            {selectedDay ? (
+              <DayColumn
+                day={selectedDay}
+                readOnly={readOnly}
+                onReorder={(orderedItemIds) =>
+                  reorder.mutate({ dayId: selectedDay.id, orderedItemIds })
+                }
+                onRemoveItem={(itemId) => removeItem.mutate(itemId)}
+                onUpdateSpotNotes={(spotId, notes) => updateSpotNotes.mutate({ spotId, notes })}
+                onUpdateSchedule={(itemId, schedule) =>
+                  updateItemSchedule.mutate({ itemId, ...schedule })
+                }
+                onUpdateTravelMode={(itemId, travelMode) =>
+                  updateTravelMode.mutate({ itemId, travelMode })
+                }
+              />
+            ) : (
+              <p className="text-sm text-zinc-500">まだ日程がありません。</p>
+            )}
+          </div>
         </aside>
 
         <main className="relative min-h-0 flex-1">
