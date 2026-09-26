@@ -18,10 +18,11 @@ const LIST_PATHS = new Set(["/trips", "/spots"]);
 //
 // The tab switch itself is driven by router.push() wrapped in a transition
 // (rather than a plain <Link>) so this component can observe isPending and
-// overlay a compass spinner over the content area while the destination
-// page's data loads — without that pending state ever touching this shared
-// header, which keeps rendering the old page underneath until the new one
-// is ready.
+// swap the content area for a centered compass spinner while the
+// destination page's data loads — hiding the old page entirely rather than
+// dimming/blurring it — without that pending state ever touching this
+// shared header (tabs, user menu), which never re-renders during the
+// switch.
 export function ListsChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -47,12 +48,13 @@ export function ListsChrome({ children }: { children: ReactNode }) {
           <ListViewToggle pathname={pathname} pending={isPending} onNavigate={navigate} />
           <UserMenu />
         </div>
-        <div className="relative flex flex-1 flex-col gap-8">
-          {children}
-          {isPending && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-background/70 backdrop-blur-sm">
+        <div className="flex flex-1 flex-col gap-8">
+          {isPending ? (
+            <div className="flex flex-1 items-center justify-center">
               <CompassLoader />
             </div>
+          ) : (
+            children
           )}
         </div>
       </div>
