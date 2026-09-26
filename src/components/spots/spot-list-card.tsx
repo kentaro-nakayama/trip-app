@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CARD_GLOW } from "@/lib/card-glow";
+import { CREATE_BUTTON_GLOW } from "@/lib/card-glow";
 import { cn, extractErrorMessage } from "@/lib/utils";
 import type { SpotListSummary } from "@/lib/types";
 
@@ -83,7 +83,7 @@ export function SpotListCard({ spotList }: { spotList: SpotListCardData }) {
   return (
     <div className="relative">
       <Link href={`/spots/${spotList.id}`}>
-        <Card className={cn("h-full transition-all duration-150 hover:-translate-y-0.5", CARD_GLOW)}>
+        <Card className={cn("h-full transition-all duration-150 hover:-translate-y-0.5", CREATE_BUTTON_GLOW)}>
           <CardHeader>
             <CardTitle className="mb-1 pr-16 font-semibold">{spotList.name}</CardTitle>
             <CardDescription className={cn("line-clamp-1", !spotList.description && "invisible")}>

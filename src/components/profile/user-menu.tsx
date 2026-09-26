@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { UserRoundPen } from "lucide-react";
-import { CARD_GLOW } from "@/lib/card-glow";
+import { CREATE_BUTTON_GLOW } from "@/lib/card-glow";
 import { cn } from "@/lib/utils";
 import { DisplayNameDialog } from "./display-name-dialog";
 
@@ -12,7 +12,7 @@ export function UserMenu() {
 
   return (
     <>
-      <div className={cn("inline-flex rounded-full border border-zinc-400 dark:border-zinc-500", CARD_GLOW)}>
+      <div className={cn("inline-flex rounded-full", CREATE_BUTTON_GLOW)}>
         <UserButton>
           <UserButton.MenuItems>
             <UserButton.Action
