@@ -195,6 +195,8 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
+                        className="w-[140px] max-w-full"
+                        style={{ width: 140 }}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -204,6 +206,8 @@ export function TripCard({ trip }: { trip: TripCardData }) {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
+                        className="w-[140px] max-w-full"
+                        style={{ width: 140 }}
                       />
                     </div>
                   </div>

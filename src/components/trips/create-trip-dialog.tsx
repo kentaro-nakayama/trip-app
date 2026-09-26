@@ -117,6 +117,8 @@ export function CreateTripDialog() {
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   required
+                  className="w-[140px] max-w-full"
+                  style={{ width: 140 }}
                 />
               </div>
               <div className="grid gap-2">
@@ -128,6 +130,8 @@ export function CreateTripDialog() {
                   min={startDate || undefined}
                   onChange={(e) => setEndDate(e.target.value)}
                   required
+                  className="w-[140px] max-w-full"
+                  style={{ width: 140 }}
                 />
               </div>
             </div>

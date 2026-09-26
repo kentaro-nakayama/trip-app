@@ -413,7 +413,7 @@ export function TripWorkspace({
           <div>
             <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
             {(data.startDate || data.endDate) && (
-              <p className="text-[16.5px] text-zinc-500">
+              <p className="text-[15px] text-zinc-500">
                 {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
               </p>
             )}
@@ -446,7 +446,7 @@ export function TripWorkspace({
       <div className="relative flex min-h-0 flex-1 md:flex-row">
         <aside
           className={cn(
-            "absolute inset-0 z-10 min-h-0 flex-col gap-4 overflow-y-auto bg-background p-4 md:static md:z-auto md:flex md:w-[380px] md:flex-none md:shrink-0 md:border-r",
+            "absolute inset-0 z-10 min-h-0 flex-col gap-4 overflow-y-auto bg-background p-4 md:static md:z-auto md:flex md:w-[456px] md:flex-none md:shrink-0 md:border-r",
             mobileView === "list" ? "flex" : "hidden",
           )}
         >
@@ -464,7 +464,7 @@ export function TripWorkspace({
               <div>
                 <h1 className="text-lg font-semibold leading-tight">{data.name}</h1>
                 {(data.startDate || data.endDate) && (
-                  <p className="text-[16.5px] text-zinc-500">
+                  <p className="text-[15px] text-zinc-500">
                     {data.startDate ?? "?"} 〜 {data.endDate ?? "?"}
                   </p>
                 )}

@@ -23,7 +23,8 @@ function burstTravelParticles(btn: HTMLElement) {
   const centerX = btnRect.left + btnRect.width / 2;
   const centerY = btnRect.top + btnRect.height / 2;
 
-  const count = 6;
+  const count = 9;
+  const size = 44;
   const maxDist = 130;
   const speed = 0.4;
 
@@ -33,8 +34,8 @@ function burstTravelParticles(btn: HTMLElement) {
     p.style.left = "0";
     p.style.top = "0";
     p.style.pointerEvents = "none";
-    p.style.width = "30px";
-    p.style.height = "30px";
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
     p.style.zIndex = "9999";
     p.style.color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
     p.innerHTML = TRAVEL_SVGS[Math.floor(Math.random() * TRAVEL_SVGS.length)];
@@ -43,8 +44,8 @@ function burstTravelParticles(btn: HTMLElement) {
     const angle = Math.random() * Math.PI * 2;
     const dist = maxDist * 0.7 + Math.random() * maxDist * 0.5;
     const duration = 1200 / speed + Math.random() * 500;
-    const startX = centerX - 15;
-    const startY = centerY - 15;
+    const startX = centerX - size / 2;
+    const startY = centerY - size / 2;
     const targetX = startX + Math.cos(angle) * dist;
     const targetY = startY + Math.sin(angle) * dist;
 
